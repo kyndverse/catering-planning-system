@@ -14,13 +14,13 @@ import (
 func main() {
 	envConfig := config.NewEnvConfig()
 	logger := config.NewLogger(envConfig)
-	db := config.NewDB(envConfig)
+	db := config.NewDB(envConfig, logger)
 	chiRouter := chi.NewRouter()
 	decoder := form.NewDecoder()
 	validator := validator.NewValidator()
 
 	app := &http.Server{
-		Addr:    envConfig.Addr,
+		Addr:    envConfig.ADDR,
 		Handler: chiRouter,
 	}
 

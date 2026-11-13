@@ -7,8 +7,8 @@ import (
 )
 
 type ConfigEnv struct {
-	Addr      string
-	DBDSN     string
+	ADDR      string
+	DB_DSN    string
 	LOG_LEVEL string
 }
 
@@ -16,8 +16,8 @@ func NewEnvConfig() *ConfigEnv {
 	_ = godotenv.Load()
 
 	cfg := &ConfigEnv{
-		Addr:      getEnv("ADDR", ":8080"),
-		DBDSN:     os.Getenv("DBDSN"),
+		ADDR:      getEnv("ADDR", ":8080"),
+		DB_DSN:    os.Getenv("DB_DSN"),
 		LOG_LEVEL: os.Getenv("LOG_LEVEL"),
 	}
 
