@@ -15,7 +15,7 @@ import (
 )
 
 type BootstrapConfig struct {
-	Router    chi.Router
+	App       chi.Router
 	Logger    *logrus.Logger
 	Decoder   *form.Decoder
 	Validator *validator.Validator
@@ -36,7 +36,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := &router.RouteConfig{
-		Router:         config.Router,
+		App:            config.App,
 		PageHandler:    pageHandler,
 		ProductHandler: productRender,
 	}

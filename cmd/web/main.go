@@ -26,7 +26,7 @@ func main() {
 
 	config.Bootstrap(&config.BootstrapConfig{
 		Logger:    logger,
-		Router:    chiRouter,
+		App:       chiRouter,
 		DB:        db,
 		Decoder:   decoder,
 		Validator: validator,
