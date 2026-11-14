@@ -15,8 +15,8 @@ type RouteConfig struct {
 }
 
 func (c *RouteConfig) Setup() {
-	fs := http.FileServer(http.Dir("static"))
-	c.App.Handle("/static/*", http.StripPrefix("/static/", fs))
+	fs := http.FileServer(http.Dir("web/static"))
+	c.App.Handle("/web/static/*", http.StripPrefix("/web/static/", fs))
 
 	// Pages
 	c.App.Get("/", c.PageHandler.HomePage)

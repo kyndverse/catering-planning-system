@@ -22,9 +22,9 @@ func NewRenderer() *Renderer {
 
 	for _, file := range files {
 		renderer.template[file] = template.Must(template.New("layout").Funcs(funcs).ParseFiles(
-			"templates/layout.html",
-			"templates/sidebar.html",
-			"templates/pages/"+file,
+			"web/templates/layout.html",
+			"web/templates/sidebar.html",
+			"web/templates/pages/"+file,
 		))
 	}
 
