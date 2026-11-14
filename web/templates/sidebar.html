@@ -1,10 +1,26 @@
 {{define "sidebar"}}
 <aside class="sidebar">
-    <nav>
-        <ul>
-            <li><a href="/"{{if eq .title "Home"}} class="active" aria-current="page"{{end}}>Home</a></li>
-            <li><a href="/products"{{if eq .title "Products"}} class="active" aria-current="page"{{end}}>Product</a></li>
-        </ul>
-    </nav>
+  <nav aria-label="Menu utama">
+    <ul>
+      <li>
+        <a href="/ingredients" {{if eq .active "ingredients"}}class="active" aria-current="page"{{end}}>Bahan Baku</a>
+      </li>
+      <li>
+        <a href="/recipes" {{if eq .active "recipes"}}class="active" aria-current="page"{{end}}>Resep</a>
+      </li>
+      <li>
+        <a href="/orders" {{if eq .active "orders"}}class="active" aria-current="page"{{end}}>Pesanan</a>
+      </li>
+      <li>
+        <a href="/production" {{if eq .active "production"}}class="active" aria-current="page"{{end}}>Produksi &amp; Belanja</a>
+      </li>
+      <li>
+        <a href="/stock" {{if eq .active "stock"}}class="active" aria-current="page"{{end}}>Stok</a>
+      </li>
+      <li>
+        <a href="/cogs" {{if eq .active "cogs"}}class="active" aria-current="page"{{end}}>HPP</a>
+      </li>
+    </ul>
+  </nav>
 </aside>
 {{end}}

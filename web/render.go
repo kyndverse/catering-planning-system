@@ -1,4 +1,4 @@
-package handler
+package web
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ type Renderer struct {
 }
 
 func NewRenderer() *Renderer {
-	files := []string{"home-page.html", "product-page.html", "product-form-page.html"}
+	files := []string{"home-page.html", "ingredients-page.html", "ingredients-form-page.html"}
 
 	renderer := &Renderer{
 		template: make(map[string]*template.Template),
@@ -24,6 +24,7 @@ func NewRenderer() *Renderer {
 		renderer.template[file] = template.Must(template.New("layout").Funcs(funcs).ParseFiles(
 			"web/templates/layout.html",
 			"web/templates/sidebar.html",
+			"web/templates/navbar.html",
 			"web/templates/pages/"+file,
 		))
 	}

@@ -1,0 +1,87 @@
+{{define "content"}} {{with .IngredientForm}}
+<div class="page-header">
+  <h1>{{.Judul}}</h1>
+</div>
+
+<form method="post" action="{{.Action}}" class="form">
+  <div class="field">
+    <label for="name">Nama</label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      value="{{.Data.Name}}"
+      placeholder="Contoh: Beras"
+      autocomplete="off"
+    />
+    {{with index .Errors "Name"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+
+  <div class="field">
+    <label for="base_unit">Satuan Dasar</label>
+    <select id="base_unit" name="base_unit">
+      {{range $.baseUnits}}
+      <option
+        value="{{.}}"
+        {{if
+        eq
+        .
+        $.IngredientForm.Data.BaseUnit}}selected{{end}}
+      >
+        {{.}}
+      </option>
+      {{end}}
+    </select>
+    <p class="field-hint">Satuan untuk semua perhitungan resep dan stok.</p>
+    {{if $.isEdit}}
+    <p class="field-hint">
+      Mengubah satuan dasar bahan yang sudah dipakai resep akan mengubah arti
+      kuantitas di resep tersebut.
+    </p>
+    {{end}}
+  </div>
+
+  <div class="field">
+    <label for="purchase_unit">Satuan Beli</label>
+    <input
+      id="purchase_unit"
+      name="purchase_unit"
+      type="text"
+      value="{{.Data.PurchaseUnit}}"
+      placeholder="Contoh: karung 5 kg"
+      autocomplete="off"
+    />
+    {{with index .Errors "PurchaseUnit"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+
+  <div class="field">
+    <label for="base_qty_per_purchase_unit">Isi per Satuan Beli</label>
+    <input
+      id="base_qty_per_purchase_unit"
+      name="base_qty_per_purchase_unit"
+      type="number"
+      inputmode="decimal"
+      value="{{.Data.BaseQtyPerPurchaseUnit}}"
+      placeholder="Contoh: 5000"
+    />
+    {{with index .Errors "BaseQtyPerPurchaseUnit"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+
+    <p class="field-hint">
+      Isi satu satuan beli dalam satuan dasar. Contoh: karung 5 kg = 5000 (g),
+      pouch 2 L = 2000 (ml).
+    </p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{$.submitLabel}}</button>
+    <a href="/ingredients" class="button button--secondary">Batal</a>
+  </div>
+</form>
+
+{{end}}{{end}}

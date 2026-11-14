@@ -8,6 +8,7 @@ import (
 	"golang-web/internal/router"
 	"golang-web/internal/service"
 	"golang-web/internal/validator"
+	"golang-web/web"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/form/v4"
@@ -24,21 +25,21 @@ type BootstrapConfig struct {
 
 func Bootstrap(config *BootstrapConfig) {
 	// setup repo
-	productRepo := repository.NewProductRepository(config.Logger)
+	ingredientsRepo := repository.NewIngredientRepository(config.Logger)
 
 	// setup service
-	productService := service.NewProductService(config.Logger, config.DB, config.Validator, productRepo)
+	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientsRepo)
 
 	// setup handler
-	renderer := handler.NewRenderer()
+	renderer := web.NewRenderer()
 	pageHandler := handler.NewPageHandler(renderer)
-	productRender := handler.NewProductHandler(config.Logger, renderer, config.Decoder, productService)
+	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
 
 	// setup route
 	routeConfig := &router.RouteConfig{
-		App:            config.App,
-		PageHandler:    pageHandler,
-		ProductHandler: productRender,
+		App:               config.App,
+		PageHandler:       pageHandler,
+		IngredientHandler: ingredientHandler,
 	}
 
 	routeConfig.Setup()

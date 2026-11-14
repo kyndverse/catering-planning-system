@@ -9,9 +9,9 @@ import (
 )
 
 type RouteConfig struct {
-	App            chi.Router
-	PageHandler    *handler.PageHandler
-	ProductHandler *handler.ProductHandler
+	App               chi.Router
+	PageHandler       *handler.PageHandler
+	IngredientHandler *handler.IngredientHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -21,10 +21,10 @@ func (c *RouteConfig) Setup() {
 	// Pages
 	c.App.Get("/", c.PageHandler.HomePage)
 
-	// Products
-	c.App.Route("/products", func(r chi.Router) {
-		r.Get("/", c.ProductHandler.GetProductsHandler)
-		r.Post("/", c.ProductHandler.CreateProductHandler)
-		r.Get("/create", c.PageHandler.CreateProductForm)
+	// Ingredients
+	c.App.Route("/ingredients", func(r chi.Router) {
+		r.Get("/", c.IngredientHandler.GetAllIngredient)
+		r.Post("/", c.IngredientHandler.CreateIngredient)
+		r.Get("/create", c.PageHandler.CreateIngredientForm)
 	})
 }
