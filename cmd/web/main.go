@@ -19,6 +19,8 @@ func main() {
 	decoder := form.NewDecoder()
 	validator := validator.NewValidator()
 
+	defer db.Close()
+
 	app := &http.Server{
 		Addr:    envConfig.ADDR,
 		Handler: chiRouter,
