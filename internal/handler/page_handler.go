@@ -1,19 +1,24 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"golang-web/internal/model"
+	"golang-web/internal/service"
 	"golang-web/web"
 )
 
 type PageHandler struct {
-	Renderer *web.Renderer
+	Renderer          *web.Renderer
+	IngredientService *service.IngredientService
 }
 
-func NewPageHandler(renderer *web.Renderer) *PageHandler {
+func NewPageHandler(renderer *web.Renderer, ingredientService *service.IngredientService) *PageHandler {
 	return &PageHandler{
-		Renderer: renderer,
+		Renderer:          renderer,
+		IngredientService: ingredientService,
 	}
 }
 
@@ -34,6 +39,44 @@ func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Reques
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         false,
+		"IngredientForm": ingredientForm,
+	}
+
+	h.Renderer.Render(w, "ingredients-form-page.html", data)
+}
+
+func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	ingredient, err := h.IngredientService.GetIngredientById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch ingredient", http.StatusInternalServerError)
+		return
+	}
+
+	ingredientForm := model.FormData[model.UpdateIngredientRequest]{
+		Judul:  "Edit Ingredients",
+		Action: fmt.Sprintf("/ingredients/%d/edit", ID),
+		Data: model.UpdateIngredientRequest{
+			Name:                   ingredient.Name,
+			BaseUnit:               ingredient.BaseUnit,
+			PurchaseUnit:           ingredient.PurchaseUnit,
+			BaseQtyPerPurchaseUnit: ingredient.BaseQtyPerPurchaseUnit,
+		},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":          "Edit Product",
+		"baseUnits":      []string{"g", "ml", "pcs"},
+		"submitLabel":    "Simpan",
+		"isEdit":         true,
 		"IngredientForm": ingredientForm,
 	}
 

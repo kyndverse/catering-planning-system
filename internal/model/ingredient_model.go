@@ -15,3 +15,15 @@ type CreateIngredientRequest struct {
 	PurchaseUnit           string `form:"purchase_unit" validate:"required"`
 	BaseQtyPerPurchaseUnit int64  `form:"base_qty_per_purchase_unit" validate:"required"`
 }
+
+type UpdateIngredientRequest struct {
+	ID                     int64
+	Name                   string `form:"name"`
+	BaseUnit               string `form:"base_unit"`
+	PurchaseUnit           string `form:"purchase_unit"`
+	BaseQtyPerPurchaseUnit int64  `form:"base_qty_per_purchase_unit"`
+}
+
+type DeleteIngredientRequest struct {
+	ID int64
+}

@@ -62,3 +62,57 @@ func (p *IngredientRepository) Create(tx *sql.Tx, ingredient *entity.Ingredient)
 		ingredient.BaseQtyPerPurchaseUnit,
 	).Scan(&ingredient.ID)
 }
+
+func (p *IngredientRepository) FindOneByID(tx *sql.Tx, ingredient *entity.Ingredient) error {
+	query := `SELECT id, name, base_unit, purchase_unit, base_qty_per_purchase_unit FROM ingredients WHERE id=$1 LIMIT 1`
+
+	return tx.QueryRow(
+		query,
+		ingredient.ID,
+	).Scan(
+		&ingredient.ID,
+		&ingredient.Name,
+		&ingredient.BaseUnit,
+		&ingredient.PurchaseUnit,
+		&ingredient.BaseQtyPerPurchaseUnit)
+}
+
+func (p *IngredientRepository) ExistsByNameExceptID(tx *sql.Tx, name string, ID int64) (bool, error) {
+	query := `SELECT EXISTS (SELECT 1 FROM ingredients WHERE name=$1 AND id!=$2)`
+
+	var exists bool
+	if err := tx.QueryRow(query, name, ID).Scan(&exists); err != nil {
+		return false, nil
+	}
+
+	return exists, nil
+}
+
+func (p *IngredientRepository) Update(tx *sql.Tx, ingredient *entity.Ingredient) error {
+	query := `UPDATE ingredients SET name=$1, base_unit=$2, purchase_unit=$3, base_qty_per_purchase_unit=$4 WHERE id=$5 RETURNING id, name, base_unit, purchase_unit, base_qty_per_purchase_unit`
+
+	return tx.QueryRow(
+		query,
+		ingredient.Name,
+		ingredient.BaseUnit,
+		ingredient.PurchaseUnit,
+		ingredient.BaseQtyPerPurchaseUnit,
+		ingredient.ID,
+	).Scan(
+		&ingredient.ID,
+		&ingredient.Name,
+		&ingredient.BaseUnit,
+		&ingredient.PurchaseUnit,
+		&ingredient.BaseQtyPerPurchaseUnit)
+}
+
+func (p *IngredientRepository) Delete(tx *sql.Tx, ingredient *entity.Ingredient) error {
+	query := `DELETE FROM ingredients WHERE id=$1`
+
+	_, err := tx.Exec(query, ingredient.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

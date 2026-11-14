@@ -26,5 +26,8 @@ func (c *RouteConfig) Setup() {
 		r.Get("/", c.IngredientHandler.GetAllIngredient)
 		r.Post("/", c.IngredientHandler.CreateIngredient)
 		r.Get("/create", c.PageHandler.CreateIngredientForm)
+		r.Get("/{id}/edit", c.PageHandler.EditIngredientForm)
+		r.Post("/{id}/edit", c.IngredientHandler.EditIngredient)
+		r.Post("/{id}/delete", c.IngredientHandler.DeleteIngredient)
 	})
 }

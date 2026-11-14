@@ -3,6 +3,10 @@
   <h1>{{.Judul}}</h1>
 </div>
 
+{{with index .Errors "Error"}}
+<div class="form-errors">{{.}}</div>
+{{end}}
+
 <form method="post" action="{{.Action}}" class="form">
   <div class="field">
     <label for="name">Nama</label>

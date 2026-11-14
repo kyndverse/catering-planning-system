@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"fmt"
 	"golang-web/internal/model"
 	"golang-web/internal/service"
 	"golang-web/web"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/form/v4"
 	"github.com/sirupsen/logrus"
@@ -64,14 +66,14 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 
 	if formError != nil {
 		ingredientForm := model.FormData[model.CreateIngredientRequest]{
-			Judul:  "Create Product",
+			Judul:  "Create Ingredient",
 			Action: "/ingredients",
 			Data:   *request,
 			Errors: formError,
 		}
 
 		data := map[string]any{
-			"title":          "Create Product",
+			"title":          "Create Ingredient",
 			"baseUnits":      []string{"g", "ml", "pcs"},
 			"submitLabel":    "Simpan",
 			"isEdit":         false,
@@ -83,4 +85,90 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 	}
 
 	http.Redirect(w, r, "/ingredients", http.StatusSeeOther)
+}
+
+func (h *IngredientHandler) EditIngredient(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	h.Log.Info("ID params adalah: ", ID)
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	request := new(model.UpdateIngredientRequest)
+	if err := h.Decoder.Decode(request, r.PostForm); err != nil {
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	request.ID = ID
+	_, formError, err := h.IngredientService.EditIngredient(r.Context(), request)
+	if err != nil {
+		h.Log.WithError(err).Error("error edit ingredients")
+		http.Error(w, "Failed to edit ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	if formError != nil {
+		ingredientForm := model.FormData[model.UpdateIngredientRequest]{
+			Judul:  "Update Ingredient",
+			Action: fmt.Sprintf("/ingredients/%d/edit", ID),
+			Data:   *request,
+			Errors: formError,
+		}
+
+		data := map[string]any{
+			"title":          "Update Ingredient",
+			"baseUnits":      []string{"g", "ml", "pcs"},
+			"submitLabel":    "Simpan",
+			"isEdit":         true,
+			"IngredientForm": ingredientForm,
+		}
+
+		h.Renderer.Render(w, "ingredients-form-page.html", data)
+		return
+	}
+
+	http.Redirect(w, r, "/ingredients", http.StatusSeeOther)
+}
+
+func (h *IngredientHandler) DeleteIngredient(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	request := new(model.DeleteIngredientRequest)
+	request.ID = ID
+
+	if err := h.IngredientService.DeleteIngredient(r.Context(), request); err != nil {
+		h.Log.WithError(err).Error("error delete ingredients")
+		http.Error(w, "Failed to delete ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	ingredients, err := h.IngredientService.GetAllIngredients(r.Context())
+	if err != nil {
+		h.Log.WithError(err).Error("error get ingredients")
+		http.Error(w, "Failed to retrieve ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]any{
+		"title":       "Ingredients",
+		"ingredients": ingredients,
+	}
+
+	h.Renderer.Render(w, "ingredients-page.html", data)
 }

@@ -32,7 +32,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup handler
 	renderer := web.NewRenderer()
-	pageHandler := handler.NewPageHandler(renderer)
+	pageHandler := handler.NewPageHandler(renderer, ingredientService)
 	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
 
 	// setup route
