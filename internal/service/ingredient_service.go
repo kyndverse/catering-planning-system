@@ -27,23 +27,37 @@ func NewIngredientService(logger *logrus.Logger, db *sql.DB, validator *validato
 	}
 }
 
-func (p *IngredientService) GetAllIngredients(ctx context.Context) ([]entity.Ingredient, error) {
+func (p *IngredientService) GetAllIngredients(ctx context.Context) ([]model.IngredientResponse, error) {
 	tx, err := p.DB.BeginTx(ctx, nil)
 	if err != nil {
+		p.Log.WithError(err).Error("failed to begin transaction")
 		return nil, err
 	}
 	defer tx.Rollback()
 
 	ingredients, err := p.IngredientRepository.FindAll(tx)
 	if err != nil {
+		p.Log.WithError(err).Error("failed to find ingredients")
 		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
+		p.Log.WithError(err).Error("failed to commit transaction")
 		return nil, err
 	}
 
-	return ingredients, nil
+	response := []model.IngredientResponse{}
+	for _, ingredient := range ingredients {
+		response = append(response, model.IngredientResponse{
+			ID:                     ingredient.ID,
+			Name:                   ingredient.Name,
+			BaseUnit:               ingredient.BaseUnit,
+			PurchaseUnit:           ingredient.PurchaseUnit,
+			BaseQtyPerPurchaseUnit: ingredient.BaseQtyPerPurchaseUnit,
+		})
+	}
+
+	return response, nil
 }
 
 func (p *IngredientService) AddIngredient(ctx context.Context, request *model.CreateIngredientRequest) (*model.IngredientResponse, validator.ValidatorErrors, error) {
@@ -54,6 +68,7 @@ func (p *IngredientService) AddIngredient(ctx context.Context, request *model.Cr
 
 	tx, err := p.DB.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
+		p.Log.WithError(err).Error("failed to begin transaction")
 		return nil, nil, err
 	}
 	defer tx.Rollback()
@@ -67,10 +82,12 @@ func (p *IngredientService) AddIngredient(ctx context.Context, request *model.Cr
 	}
 
 	if err := p.IngredientRepository.Create(tx, ingredient); err != nil {
+		p.Log.WithError(err).Error("failed to create ingredient")
 		return nil, nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
+		p.Log.WithError(err).Error("failed to commit transaction")
 		return nil, nil, err
 	}
 
