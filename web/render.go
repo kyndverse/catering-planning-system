@@ -13,8 +13,9 @@ type Renderer struct {
 	template map[string]*template.Template
 }
 
+// use go embed on production
 func NewRenderer() *Renderer {
-	files := []string{"home-page.html", "ingredients-page.html", "ingredients-form-page.html"}
+	files := []string{"home-page.html", "ingredients-page.html", "ingredients-form-page.html", "ingredients-price-page.html"}
 
 	renderer := &Renderer{
 		template: make(map[string]*template.Template),

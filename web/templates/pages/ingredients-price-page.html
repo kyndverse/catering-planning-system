@@ -1,0 +1,121 @@
+{{define "content"}}
+<div class="page-header">
+  <div>
+    <h1>Riwayat Harga</h1>
+    <p class="page-subtitle">{{.Ingredient.Name}}</p>
+  </div>
+  <a href="/ingredients" class="button button--secondary">Kembali</a>
+</div>
+
+<div class="stack">
+  <section class="summary" aria-label="Ringkasan bahan">
+    <dl>
+      <div>
+        <dt>Satuan beli</dt>
+        <dd>{{.Ingredient.PurchaseUnit}}</dd>
+      </div>
+      <div>
+        <dt>Isi per satuan beli</dt>
+        <dd>{{.Ingredient.BaseQtyPerPurchaseUnit}} {{.Ingredient.BaseUnit}}</dd>
+      </div>
+      <div>
+        <dt>Harga berlaku</dt>
+        <dd>
+          {{with .currentPrice}}{{.PricePerPurchaseUnit}}{{else}}<span
+            class="muted"
+            >Belum ada harga</span
+          >{{end}}
+        </dd>
+      </div>
+      <div>
+        <dt>Harga per {{.Ingredient.BaseUnit}}</dt>
+        <dd>
+          {{with .currentPrice}}{{.PricePerBaseUnit}}{{else}}<span class="muted"
+            >—</span
+          >{{end}}
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <h2 class="section-title">Tambah Harga Baru</h2>
+
+    <form method="post" action="{{.IngredientForm.Action}}" class="form">
+      <div class="field">
+        <label for="price_per_purchase_unit"
+          >Harga per {{.Ingredient.PurchaseUnit}}</label
+        >
+        <input
+          id="price_per_purchase_unit"
+          name="price_per_purchase_unit"
+          type="number"
+          inputmode="decimal"
+          step="any"
+          min="0"
+          value="{{.IngredientForm.Data.PricePerPurchaseUnit}}"
+          placeholder="Contoh: 70000"
+        />
+        <p class="field-hint">Dalam Rupiah.</p>
+      </div>
+
+      <div class="field">
+        <label for="effective_from">Berlaku Mulai</label>
+        <input
+          id="effective_from"
+          name="effective_from"
+          type="date"
+          value="{{.IngredientForm.Data.EffectiveFrom}}"
+        />
+        <p class="field-hint">
+          Harga baru dipakai mulai tanggal ini. Satu tanggal hanya boleh punya
+          satu harga.
+        </p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button">Tambah Harga</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="section-title">Riwayat</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Berlaku Mulai</th>
+            <th class="num">Harga per {{.Ingredient.PurchaseUnit}}</th>
+            <th class="num">Harga per {{.Ingredient.BaseUnit}}</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Prices}}
+          <tr>
+            <td>{{.EffectiveFrom}}</td>
+            <td class="num">{{.PricePerPurchaseUnit}}</td>
+            <td class="num">{{.PricePerBaseUnit}}</td>
+            <td>
+              {{if eq .Status "current"}}<span class="badge badge--current"
+                >Berlaku</span
+              >
+              {{else if eq .Status "upcoming"}}<span class="badge"
+                >Akan berlaku</span
+              >
+              {{else}}<span class="badge badge--muted">Riwayat</span>{{end}}
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="4" class="empty">Belum ada harga untuk bahan ini.</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{{end}}
