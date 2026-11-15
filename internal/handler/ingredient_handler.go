@@ -2,11 +2,13 @@ package handler
 
 import (
 	"fmt"
+	"golang-web/internal/handler/view"
 	"golang-web/internal/model"
 	"golang-web/internal/service"
 	"golang-web/web"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-playground/form/v4"
 	"github.com/sirupsen/logrus"
@@ -171,4 +173,91 @@ func (h *IngredientHandler) DeleteIngredient(w http.ResponseWriter, r *http.Requ
 	}
 
 	h.Renderer.Render(w, "ingredients-page.html", data)
+}
+
+func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	request := new(model.CreateIngredientPriceRequest)
+	if err := h.Decoder.Decode(request, r.PostForm); err != nil {
+		h.Log.WithError(err).Error("Error decode form")
+		http.Error(w, "Invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	effectiveFromDate := r.PostFormValue("effective_from")
+	effectiveFromDateOnly, err := time.Parse(time.DateOnly, effectiveFromDate)
+	if err != nil {
+		http.Error(w, "failed to add ingredient price", http.StatusInternalServerError)
+		return
+	}
+
+	request.IngredientID = ID
+	request.EffectiveFrom = effectiveFromDateOnly
+
+	_, formError, err := h.IngredientService.AddIngredientPrice(r.Context(), request)
+	if err != nil {
+		h.Log.WithError(err).Error("error add ingredient price")
+		http.Error(w, "Failed to add ingredient price", http.StatusInternalServerError)
+		return
+	}
+
+	ing, err := h.IngredientService.GetIngredientById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch ingredient", http.StatusInternalServerError)
+		return
+	}
+
+	prices, err := h.IngredientService.GetAllPricesByIngredientID(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch ingredient prices", http.StatusInternalServerError)
+		return
+	}
+
+	records := make([]view.PriceRecord, 0, len(prices))
+	for _, p := range prices {
+		records = append(records, view.PriceRecord{
+			ID:                   int(p.ID),
+			PricePerPurchaseUnit: fmt.Sprint(p.PricePerPurchaseUnit),
+			EffectiveFrom:        p.EffectiveFrom,
+		})
+	}
+
+	rows, currentPrice, err := view.BuildPriceRows(records, fmt.Sprint(ing.BaseQtyPerPurchaseUnit), time.Now())
+	if err != nil {
+		http.Error(w, "failed to build prices", http.StatusInternalServerError)
+		return
+	}
+
+	if formError != nil {
+		ingredientForm := model.FormData[model.CreateIngredientPriceRequest]{
+			Judul:  "Create Ingredient Price",
+			Action: fmt.Sprintf("/ingredients/%d/prices", ID),
+			Data:   *request,
+			Errors: formError,
+		}
+
+		data := map[string]any{
+			"title":          "Edit Product",
+			"currentPrice":   currentPrice,
+			"Ingredient":     ing,
+			"Prices":         rows,
+			"IngredientForm": ingredientForm,
+		}
+		h.Renderer.Render(w, "ingredients-form-page.html", data)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/ingredients/%d/prices", ID), http.StatusSeeOther)
 }

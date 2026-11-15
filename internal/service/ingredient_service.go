@@ -12,18 +12,20 @@ import (
 )
 
 type IngredientService struct {
-	Log                  *logrus.Logger
-	DB                   *sql.DB
-	Validator            *validator.Validator
-	IngredientRepository *repository.IngredientRepository
+	Log                       *logrus.Logger
+	DB                        *sql.DB
+	Validator                 *validator.Validator
+	IngredientRepository      *repository.IngredientRepository
+	IngredientPriceRepository *repository.IngredientPriceRepository
 }
 
-func NewIngredientService(logger *logrus.Logger, db *sql.DB, validator *validator.Validator, ingredientRepository *repository.IngredientRepository) *IngredientService {
+func NewIngredientService(logger *logrus.Logger, db *sql.DB, validator *validator.Validator, ingredientRepository *repository.IngredientRepository, ingredientPriceRepository *repository.IngredientPriceRepository) *IngredientService {
 	return &IngredientService{
-		Log:                  logger,
-		DB:                   db,
-		Validator:            validator,
-		IngredientRepository: ingredientRepository,
+		Log:                       logger,
+		DB:                        db,
+		Validator:                 validator,
+		IngredientRepository:      ingredientRepository,
+		IngredientPriceRepository: ingredientPriceRepository,
 	}
 }
 
@@ -60,6 +62,75 @@ func (p *IngredientService) GetAllIngredients(ctx context.Context) ([]model.Ingr
 	return response, nil
 }
 
+func (p *IngredientService) GetAllPricesByIngredientID(ctx context.Context, ID int64) ([]model.IngredientPriceResponse, error) {
+	tx, err := p.DB.BeginTx(ctx, nil)
+	if err != nil {
+		p.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	prices, err := p.IngredientPriceRepository.FindAllByIngedientID(tx, ID)
+	if err != nil {
+		p.Log.WithError(err).Error("failed to find ingredient prices")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		p.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	response := []model.IngredientPriceResponse{}
+	for _, price := range prices {
+		response = append(response, model.IngredientPriceResponse{
+			ID:                   price.ID,
+			IngredientID:         price.IngredientID,
+			PricePerPurchaseUnit: price.PricePerPurchaseUnit,
+			EffectiveFrom:        price.EffectiveFrom,
+		})
+	}
+
+	return response, nil
+}
+
+func (p *IngredientService) AddIngredientPrice(ctx context.Context, request *model.CreateIngredientPriceRequest) (*model.IngredientPriceResponse, validator.ValidatorErrors, error) {
+	fieldErrors := p.Validator.ValidateStruct(request)
+	if fieldErrors != nil {
+		return nil, fieldErrors, nil
+	}
+
+	tx, err := p.DB.BeginTx(ctx, nil)
+	if err != nil {
+		p.Log.WithError(err).Error("failed to begin transaction")
+		return nil, nil, err
+	}
+	defer tx.Rollback()
+
+	price := &entity.IngredientPrice{
+		IngredientID:         request.IngredientID,
+		PricePerPurchaseUnit: request.PricePerPurchaseUnit,
+		EffectiveFrom:        request.EffectiveFrom,
+	}
+
+	if err := p.IngredientPriceRepository.Create(tx, price); err != nil {
+		p.Log.WithError(err).Error("failed to create ingredient prices")
+		return nil, nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		p.Log.WithError(err).Error("failed to commit transaction")
+		return nil, nil, err
+	}
+
+	return &model.IngredientPriceResponse{
+		ID:                   price.ID,
+		IngredientID:         request.IngredientID,
+		PricePerPurchaseUnit: request.PricePerPurchaseUnit,
+		EffectiveFrom:        request.EffectiveFrom,
+	}, nil, nil
+}
+
 func (p *IngredientService) AddIngredient(ctx context.Context, request *model.CreateIngredientRequest) (*model.IngredientResponse, validator.ValidatorErrors, error) {
 	fieldErrors := p.Validator.ValidateStruct(request)
 	if fieldErrors != nil {
@@ -78,8 +149,6 @@ func (p *IngredientService) AddIngredient(ctx context.Context, request *model.Cr
 		p.Log.WithError(err).Error("failed to check ingredient name")
 		return nil, nil, err
 	}
-
-	p.Log.Info("Name isExist:", exists)
 
 	if exists {
 		formError := validator.ValidatorErrors{

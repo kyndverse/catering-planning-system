@@ -25,10 +25,11 @@ type BootstrapConfig struct {
 
 func Bootstrap(config *BootstrapConfig) {
 	// setup repo
-	ingredientsRepo := repository.NewIngredientRepository(config.Logger)
+	ingredientRepo := repository.NewIngredientRepository(config.Logger)
+	ingredientPriceRepo := repository.NewIngredientPriceRepository(config.Logger)
 
 	// setup service
-	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientsRepo)
+	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientRepo, ingredientPriceRepo)
 
 	// setup handler
 	renderer := web.NewRenderer()

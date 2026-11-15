@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	"golang-web/internal/handler/view"
 	"golang-web/internal/model"
 	"golang-web/internal/service"
 	"golang-web/web"
@@ -81,4 +83,58 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.Renderer.Render(w, "ingredients-form-page.html", data)
+}
+
+func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	ing, err := h.IngredientService.GetIngredientById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch ingredient", http.StatusInternalServerError)
+		return
+	}
+
+	prices, err := h.IngredientService.GetAllPricesByIngredientID(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch ingredient", http.StatusInternalServerError)
+		return
+	}
+
+	records := make([]view.PriceRecord, 0, len(prices))
+	for _, p := range prices {
+		records = append(records, view.PriceRecord{
+			ID:                   int(p.ID),
+			PricePerPurchaseUnit: fmt.Sprint(p.PricePerPurchaseUnit),
+			EffectiveFrom:        p.EffectiveFrom,
+		})
+	}
+
+	rows, currentPrice, err := view.BuildPriceRows(records, fmt.Sprint(ing.BaseQtyPerPurchaseUnit), time.Now())
+	if err != nil {
+		http.Error(w, "failed to build prices", http.StatusInternalServerError)
+		return
+	}
+
+	ingredientForm := model.FormData[model.CreateIngredientPriceRequest]{
+		Judul:  "Ingredient Price",
+		Action: fmt.Sprintf("/ingredients/%d/prices", ID),
+		Data:   model.CreateIngredientPriceRequest{},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":          "Riwayat Harga",
+		"currentPrice":   currentPrice,
+		"Ingredient":     ing,
+		"Prices":         rows,
+		"IngredientForm": ingredientForm,
+	}
+
+	h.Renderer.Render(w, "ingredients-price-page.html", data)
 }

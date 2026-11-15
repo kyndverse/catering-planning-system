@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type IngredientResponse struct {
 	ID                     int64
 	Name                   string
@@ -22,6 +24,19 @@ type UpdateIngredientRequest struct {
 	BaseUnit               string `form:"base_unit"`
 	PurchaseUnit           string `form:"purchase_unit"`
 	BaseQtyPerPurchaseUnit int64  `form:"base_qty_per_purchase_unit"`
+}
+
+type CreateIngredientPriceRequest struct {
+	IngredientID         int64
+	PricePerPurchaseUnit float64   `form:"price_per_purchase_unit" validate:"required"`
+	EffectiveFrom        time.Time `validate:"required"`
+}
+
+type IngredientPriceResponse struct {
+	ID                   int64
+	IngredientID         int64
+	PricePerPurchaseUnit float64
+	EffectiveFrom        time.Time
 }
 
 type DeleteIngredientRequest struct {

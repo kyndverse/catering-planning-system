@@ -29,5 +29,7 @@ func (c *RouteConfig) Setup() {
 		r.Get("/{id}/edit", c.PageHandler.EditIngredientForm)
 		r.Post("/{id}/edit", c.IngredientHandler.EditIngredient)
 		r.Post("/{id}/delete", c.IngredientHandler.DeleteIngredient)
+		r.Get("/{id}/prices", c.PageHandler.IngredientPricePage)
+		r.Post("/{id}/prices", c.IngredientHandler.AddIngredientPrice)
 	})
 }
