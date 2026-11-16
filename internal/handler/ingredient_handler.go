@@ -43,7 +43,7 @@ func (h *IngredientHandler) GetAllIngredient(w http.ResponseWriter, r *http.Requ
 		"ingredients": ingredients,
 	}
 
-	h.Renderer.Render(w, "ingredients-page.html", data)
+	h.Renderer.Render(w, "ingredients/index.html", data)
 }
 
 func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 			"IngredientForm": ingredientForm,
 		}
 
-		h.Renderer.Render(w, "ingredients-form-page.html", data)
+		h.Renderer.Render(w, "ingredients/form.html", data)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (h *IngredientHandler) EditIngredient(w http.ResponseWriter, r *http.Reques
 			"IngredientForm": ingredientForm,
 		}
 
-		h.Renderer.Render(w, "ingredients-form-page.html", data)
+		h.Renderer.Render(w, "ingredients/form.html", data)
 		return
 	}
 
@@ -172,7 +172,7 @@ func (h *IngredientHandler) DeleteIngredient(w http.ResponseWriter, r *http.Requ
 		"ingredients": ingredients,
 	}
 
-	h.Renderer.Render(w, "ingredients-page.html", data)
+	h.Renderer.Render(w, "ingredients/index.html", data)
 }
 
 func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Request) {
@@ -255,7 +255,7 @@ func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Re
 			"Prices":         rows,
 			"IngredientForm": ingredientForm,
 		}
-		h.Renderer.Render(w, "ingredients-form-page.html", data)
+		h.Renderer.Render(w, "ingredients/form.html", data)
 		return
 	}
 

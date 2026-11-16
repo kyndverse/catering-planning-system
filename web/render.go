@@ -2,10 +2,17 @@ package web
 
 import (
 	"bytes"
+	"embed"
+	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
 )
+
+//go:embed templates
+var templateFS embed.FS
 
 var funcs = template.FuncMap{}
 
@@ -13,34 +20,53 @@ type Renderer struct {
 	template map[string]*template.Template
 }
 
-// use go embed on production
 func NewRenderer() *Renderer {
-	files := []string{"home-page.html", "ingredients-page.html", "ingredients-form-page.html", "ingredients-price-page.html"}
-
 	renderer := &Renderer{
 		template: make(map[string]*template.Template),
 	}
 
-	for _, file := range files {
-		renderer.template[file] = template.Must(template.New("layout").Funcs(funcs).ParseFiles(
-			"web/templates/layout.html",
-			"web/templates/sidebar.html",
-			"web/templates/navbar.html",
-			"web/templates/pages/"+file,
-		))
+	baseFiles := []string{
+		"templates/layout.html",
+		"templates/sidebar.html",
+		"templates/navbar.html",
+	}
+
+	pages, err := fs.Glob(templateFS, "templates/pages/*/*.html")
+	if err != nil {
+		panic(err)
+	}
+
+	for _, page := range pages {
+		name := strings.TrimPrefix(page, "templates/pages/")
+		files := append(append([]string{}, baseFiles...), page)
+		
+		tmpl, err := template.New("layout").Funcs(funcs).ParseFS(templateFS, files...)
+		if err != nil {
+			panic(fmt.Sprintf("parse template %q: %v", page, err))
+		}
+
+		renderer.template[name] = tmpl
 	}
 
 	return renderer
 }
 
 func (r *Renderer) Render(w http.ResponseWriter, file string, data any) {
+	tmpl, ok := r.template[file]
+	if !ok {
+		log.Printf("render: template %q not found", file)
+		http.Error(w, "Halaman tidak ditemukan", http.StatusNotFound)
+		return
+	}
+
 	var buffer bytes.Buffer
 
-	if err := r.template[file].ExecuteTemplate(&buffer, "layout", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buffer, "layout", data); err != nil {
 		log.Printf("render %s: %v", file, err)
 		http.Error(w, "Terjadi kesalahan pada server", http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	buffer.WriteTo(w)
 }

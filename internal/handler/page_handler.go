@@ -25,7 +25,7 @@ func NewPageHandler(renderer *web.Renderer, ingredientService *service.Ingredien
 }
 
 func (h *PageHandler) HomePage(w http.ResponseWriter, r *http.Request) {
-	h.Renderer.Render(w, "home-page.html", nil)
+	h.Renderer.Render(w, "home/index.html", nil)
 }
 
 func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +44,7 @@ func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Reques
 		"IngredientForm": ingredientForm,
 	}
 
-	h.Renderer.Render(w, "ingredients-form-page.html", data)
+	h.Renderer.Render(w, "ingredients/form.html", data)
 }
 
 func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 		"IngredientForm": ingredientForm,
 	}
 
-	h.Renderer.Render(w, "ingredients-form-page.html", data)
+	h.Renderer.Render(w, "ingredients/form.html", data)
 }
 
 func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request) {
@@ -136,5 +136,5 @@ func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request
 		"IngredientForm": ingredientForm,
 	}
 
-	h.Renderer.Render(w, "ingredients-price-page.html", data)
+	h.Renderer.Render(w, "ingredients/price.html", data)
 }
