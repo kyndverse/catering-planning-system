@@ -138,3 +138,25 @@ func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request
 
 	h.Renderer.Render(w, "ingredients/price.html", data)
 }
+
+func (h *PageHandler) CreateRecipeForm(w http.ResponseWriter, r *http.Request) {
+
+	recipeFrom := model.FormData[model.CreateRecipeRequest]{
+		Judul:  "Create Recipe",
+		Action: "/recipes",
+		Data:   model.CreateRecipeRequest{},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":       "Create Recipe",
+		"isEdit":      false,
+		"submitLabel": "Create",
+		"cancelURL":   "/recipes",
+		"types":       []string{"PREPARED", "COMPONENT", "MENU"},
+		"units":       []string{"g", "ml", "portion"},
+		"RecipeForm":  recipeFrom,
+	}
+
+	h.Renderer.Render(w, "recipes/form.html", data)
+}

@@ -27,20 +27,24 @@ func Bootstrap(config *BootstrapConfig) {
 	// setup repo
 	ingredientRepo := repository.NewIngredientRepository(config.Logger)
 	ingredientPriceRepo := repository.NewIngredientPriceRepository(config.Logger)
+	recipeRepo := repository.NewRecipesRepository(config.Logger)
 
 	// setup service
 	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientRepo, ingredientPriceRepo)
+	recipeService := service.NewRecipesService(config.Logger, config.DB, config.Validator, recipeRepo)
 
 	// setup handler
 	renderer := web.NewRenderer()
 	pageHandler := handler.NewPageHandler(renderer, ingredientService)
 	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
+	recipeHandler := handler.NewRecipesHandler(config.Logger, renderer, config.Decoder, recipeService)
 
 	// setup route
 	routeConfig := &router.RouteConfig{
 		App:               config.App,
 		PageHandler:       pageHandler,
 		IngredientHandler: ingredientHandler,
+		RecipeHandler:     recipeHandler,
 	}
 
 	routeConfig.Setup()
