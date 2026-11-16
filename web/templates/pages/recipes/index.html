@@ -1,0 +1,54 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Resep</h1>
+  <a href="/recipes/create" class="button">Tambah Resep</a>
+</div>
+
+<div class="button-group" role="group" aria-label="Filter jenis resep">
+  <a href="/recipes" class="button button--sm{{if ne .filterType ""}} button--secondary{{end}}">Semua</a>
+  <a href="/recipes?type=MENU" class="button button--sm{{if ne .filterType "MENU"}} button--secondary{{end}}">Menu</a>
+  <a href="/recipes?type=COMPONENT" class="button button--sm{{if ne .filterType "COMPONENT"}} button--secondary{{end}}">Komponen</a>
+  <a href="/recipes?type=PREPARED" class="button button--sm{{if ne .filterType "PREPARED"}} button--secondary{{end}}">Olahan</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Jenis</th>
+        <th class="num">Hasil Resep</th>
+        <th class="num">Jumlah Isi</th>
+        <th><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .recipes}}
+      <tr>
+        <td><a href="/recipes/{{.ID}}"><strong>{{.Name}}</strong></a></td>
+        <td>
+          <span class="badge{{if eq .Type "MENU"}} badge--current{{else if eq .Type "INGREDIENT"}} badge--muted{{end}}">
+            {{if eq .Type "PREPARED"}}Olahan{{else if eq .Type "COMPONENT"}}Komponen{{else if eq .Type "MENU"}}Menu{{else if eq .Type "INGREDIENT"}}Bahan{{else}}{{.Type}}{{end}}
+          </span>
+        </td>
+        <td class="num">{{.YieldQty}} {{.YieldUnit}}</td>
+        <td class="num">{{$.ItemCount}}</td>
+        <td>
+          <div class="actions">
+            <a href="/recipes/{{.ID}}" class="button button--secondary button--sm">Detail</a>
+            <a href="/recipes/{{.ID}}/edit" class="button button--secondary button--sm">Ubah</a>
+            <form method="post" action="/recipes/{{.ID}}/delete" onsubmit="return confirm('Hapus resep ini?')">
+              <button type="submit" class="button button--danger button--sm">Hapus</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="5" class="empty">Belum ada resep.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

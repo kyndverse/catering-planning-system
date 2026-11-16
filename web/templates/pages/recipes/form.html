@@ -1,0 +1,104 @@
+{{define "content"}} {{with .RecipeForm}}
+<div class="page-header">
+  <h1>{{.Judul}}</h1>
+</div>
+
+<form method="post" action="{{.Action}}" class="form">
+  <div class="field">
+    <label for="name">Nama Resep</label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      value="{{.Data.Name}}"
+      placeholder="Contoh: Ayam Goreng"
+      autocomplete="off"
+      required
+    />
+  </div>
+
+  <div class="field">
+    <label for="type">Jenis</label>
+    <select id="type" name="type" required>
+      {{range $.types}}
+      <option value="{{.}}" {{if eq . $.RecipeForm.Data.Type}}selected{{end}}>
+        {{if eq . "PREPARED"}}Olahan{{else if eq . "COMPONENT"}}Komponen{{else if eq . "MENU"}}Menu{{else if eq . "INGREDIENT"}}Bahan{{else}}{{.}}{{end}}
+      </option>
+      {{end}}
+    </select>
+    <p class="field-hint">
+      Olahan: dipakai resep lain (mis. bumbu dasar). Komponen: bagian dari menu
+      (mis. ayam goreng). Menu: produk jual (mis. Nasi Kotak A).
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="yield_qty">Jumlah Hasil</label>
+    <input
+      id="yield_qty"
+      name="yield_qty"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      value="{{.Data.YieldQty}}"
+      placeholder="Contoh: 20"
+      required
+    />
+    <p class="field-hint" id="yield-hint">
+      Resep ini menghasilkan berapa. Contoh: ayam goreng untuk 20 porsi, bumbu
+      dasar 1000 g.
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="yield_unit">Satuan Hasil</label>
+    <select id="yield_unit" name="yield_unit" required>
+      {{range $.units}}
+      <option
+        value="{{.}}"
+        {{if
+        eq
+        .
+        $.RecipeForm.Data.YieldUnit}}selected{{end}}
+      >
+        {{.}}
+      </option>
+      {{end}}
+    </select>
+    {{if $.isEdit}}
+    <p class="field-hint">
+      Mengubah jumlah atau satuan hasil akan mengubah semua perhitungan
+      kebutuhan bahan dari resep ini.
+    </p>
+    {{end}}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{$.submitLabel}}</button>
+    <a href="{{$.cancelURL}}" class="button button--secondary">Batal</a>
+  </div>
+</form>
+
+<script>
+  // Kemudahan saja: menu selalu 1 porsi (BR-06). Backend tetap yang menegakkan aturan ini.
+  (function () {
+    var type = document.getElementById("type");
+    var qty = document.getElementById("yield_qty");
+    var unit = document.getElementById("yield_unit");
+    var hint = document.getElementById("yield-hint");
+    var defaultHint = hint.textContent;
+
+    function sync() {
+      if (type.value === "MENU") {
+        qty.value = "1";
+        unit.value = "portion";
+        hint.textContent = "Menu selalu menghasilkan 1 porsi.";
+      } else {
+        hint.textContent = defaultHint;
+      }
+    }
+    type.addEventListener("change", sync);
+  })();
+</script>
+{{end}} {{end}}

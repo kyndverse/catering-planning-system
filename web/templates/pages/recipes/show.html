@@ -1,0 +1,187 @@
+{{define "content"}}
+<div class="page-header">
+  <div>
+    <div class="header-title">
+      <h1>{{.recipe.Name}}</h1>
+      {{template "recipe-type-badge" .recipe.Type}}
+    </div>
+    <p class="page-subtitle">Hasil resep: {{.recipe.YieldQty}} {{.recipe.YieldUnit}}</p>
+  </div>
+  <div class="actions">
+    <a href="/recipes/{{.recipe.ID}}/edit" class="button button--secondary">Ubah</a>
+    <a href="/recipes" class="button button--secondary">Kembali</a>
+  </div>
+</div>
+
+<div class="stack">
+  <!-- ============ Isi resep ============ -->
+  <section>
+    <h2 class="section-title">Isi Resep</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Isi</th>
+            <th>Jenis</th>
+            <th>Jumlah</th>
+            <th><span class="sr-only">Aksi</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .items}}
+          <tr>
+            <td>
+              {{if eq .Kind "recipe"}}<a href="/recipes/{{.TargetID}}"><strong>{{.Name}}</strong></a>
+              {{else}}<strong>{{.Name}}</strong>{{end}}
+            </td>
+            <td>
+              {{if eq .Kind "recipe"}}<span class="badge">Sub-resep</span>{{else}}<span class="badge badge--muted">Bahan baku</span>{{end}}
+            </td>
+            <td>
+              <form method="post" action="/recipes/{{$.recipe.ID}}/items/{{.ID}}" class="inline-form">
+                <input
+                  type="number"
+                  name="quantity"
+                  inputmode="decimal"
+                  step="any"
+                  min="0"
+                  value="{{.Quantity}}"
+                  aria-label="Jumlah {{.Name}}"
+                  required
+                />
+                <span class="muted">{{.Unit}}</span>
+                <button type="submit" class="button button--secondary button--sm">Simpan</button>
+              </form>
+            </td>
+            <td>
+              <div class="actions">
+                <form
+                  method="post"
+                  action="/recipes/{{$.recipe.ID}}/items/{{.ID}}/delete"
+                  onsubmit="return confirm('Hapus isi ini dari resep?')"
+                >
+                  <button type="submit" class="button button--danger button--sm">Hapus</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="4" class="empty">Resep ini belum punya isi. Tambahkan bahan baku atau sub-resep di bawah.</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ Tambah isi ============ -->
+  <section>
+    <h2 class="section-title">Tambah Isi</h2>
+
+    {{template "form-errors" .itemForm.Errors}}
+
+    <form method="post" action="{{.itemForm.Action}}" class="form">
+      <div class="field">
+        <label for="item">Bahan Baku atau Sub-Resep</label>
+        <select id="item" name="item" required>
+          <option value="">Pilih…</option>
+          <optgroup label="Bahan Baku">
+            {{range .ingredientOptions}}
+            <option value="ingredient:{{.ID}}" {{if eq $.itemForm.Data.Item (printf "ingredient:%d" .ID)}}selected{{end}}>{{.Name}} ({{.Unit}})</option>
+            {{end}}
+          </optgroup>
+          <optgroup label="Sub-Resep">
+            {{range .subRecipeOptions}}
+            <option value="recipe:{{.ID}}" {{if eq $.itemForm.Data.Item (printf "recipe:%d" .ID)}}selected{{end}}>{{.Name}} ({{.Unit}})</option>
+            {{end}}
+          </optgroup>
+        </select>
+        <p class="field-hint">Satuan ditulis di dalam tanda kurung.</p>
+      </div>
+
+      <div class="field">
+        <label for="quantity">Jumlah</label>
+        <input
+          id="quantity"
+          name="quantity"
+          type="number"
+          inputmode="decimal"
+          step="any"
+          min="0"
+          value="{{.itemForm.Data.Quantity}}"
+          placeholder="Contoh: 3000"
+          required
+        />
+        <p class="field-hint">
+          Bahan baku dalam satuan dasarnya. Sub-resep dalam satuan hasil sub-resep tersebut.
+        </p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button">Tambah</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ Struktur (pohon) ============ -->
+  <section>
+    <h2 class="section-title">Struktur Resep</h2>
+
+    <div class="panel">
+      {{with .tree}}
+      <ul class="tree">
+        {{template "tree-node" .}}
+      </ul>
+      {{else}}
+      <p class="muted">Belum ada struktur untuk ditampilkan.</p>
+      {{end}}
+    </div>
+  </section>
+
+  <!-- ============ Ledakan: kebutuhan bahan baku ============ -->
+  <section>
+    <h2 class="section-title">Kebutuhan Bahan Baku</h2>
+
+    <form method="get" action="/recipes/{{.recipe.ID}}" class="inline-form calc-form">
+      <label for="qty">Untuk</label>
+      <input
+        id="qty"
+        name="qty"
+        type="number"
+        inputmode="decimal"
+        step="any"
+        min="0"
+        value="{{.explosion.Qty}}"
+        required
+      />
+      <span class="muted">{{.recipe.YieldUnit}}</span>
+      <button type="submit" class="button button--secondary button--sm">Hitung</button>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bahan Baku</th>
+            <th class="num">Kebutuhan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .explosion.Rows}}
+          <tr>
+            <td>{{.IngredientName}}</td>
+            <td class="num">{{.Quantity}} {{.Unit}}</td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="2" class="empty">Belum ada bahan baku yang dapat dihitung.</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{{end}}
