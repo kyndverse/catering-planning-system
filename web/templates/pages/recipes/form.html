@@ -13,8 +13,10 @@
       value="{{.Data.Name}}"
       placeholder="Contoh: Ayam Goreng"
       autocomplete="off"
-      required
     />
+    {{with index .Errors "Name"}}
+      <div class="form-errors">{{.}}</div>
+    {{end}}
   </div>
 
   <div class="field">
@@ -43,8 +45,10 @@
       min="0"
       value="{{.Data.YieldQty}}"
       placeholder="Contoh: 20"
-      required
     />
+    {{with index .Errors "YieldQty"}}
+      <div class="form-errors">{{.}}</div>
+    {{end}}
     <p class="field-hint" id="yield-hint">
       Resep ini menghasilkan berapa. Contoh: ayam goreng untuk 20 porsi, bumbu
       dasar 1000 g.
