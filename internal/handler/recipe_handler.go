@@ -43,7 +43,6 @@ func (h *RecipeHandler) Search(w http.ResponseWriter, r *http.Request) {
 	data := map[string]any{
 		"title":      "Recipes List",
 		"filterType": typeQuery,
-		"ItemCount":  "TEST",
 		"recipes":    recipes,
 	}
 

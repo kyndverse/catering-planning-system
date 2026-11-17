@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"golang-web/internal/domain/entity"
+	"golang-web/internal/model"
 
 	"github.com/sirupsen/logrus"
 )
@@ -17,57 +18,33 @@ func NewRecipesRepository(logger *logrus.Logger) *RecipesRepository {
 	}
 }
 
-func (r *RecipesRepository) FindAll(tx *sql.Tx) ([]entity.Recipe, error) {
-	query := `SELECT id, name, type, yield_qty, yield_unit FROM recipes`
+func (r *RecipesRepository) ListSummaries(tx *sql.Tx, recipeType string) ([]model.RecipeSummary, error) {
+	query := `
+		SELECT r.id, r.name, r.type, r.yield_qty, r.yield_unit, COUNT(ri.id) AS item_count 
+		FROM recipes r 
+		LEFT JOIN recipe_items ri ON ri.recipe_id = r.id 
+		WHERE ($1 = '' OR r.type = $1) 
+		GROUP BY r.id 
+		ORDER BY r.name 
+	`
 
-	var recipes []entity.Recipe
+	var recipes []model.RecipeSummary
 
-	rows, err := tx.Query(query)
+	rows, err := tx.Query(query, recipeType)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		recipe := entity.Recipe{}
+		recipe := model.RecipeSummary{}
 		if err := rows.Scan(
 			&recipe.ID,
 			&recipe.Name,
 			&recipe.Type,
 			&recipe.YieldQty,
 			&recipe.YieldUnit,
-		); err != nil {
-			return nil, err
-		}
-
-		recipes = append(recipes, recipe)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return recipes, nil
-}
-
-func (r *RecipesRepository) SearchByType(tx *sql.Tx, recipeType string) ([]entity.Recipe, error) {
-	query := `SELECT id, name, type, yield_qty, yield_unit FROM recipes WHERE type LIKE $1`
-
-	var recipes []entity.Recipe
-
-	rows, err := tx.Query(query, "%"+recipeType+"%")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		recipe := entity.Recipe{}
-		if err := rows.Scan(
-			&recipe.ID,
-			&recipe.Name,
-			&recipe.Type,
-			&recipe.YieldQty,
-			&recipe.YieldUnit,
+			&recipe.ItemCount,
 		); err != nil {
 			return nil, err
 		}

@@ -27,7 +27,7 @@ func NewRecipesService(logger *logrus.Logger, db *sql.DB, validator *validator.V
 	}
 }
 
-func (s *RecipesService) Search(ctx context.Context, request *model.SearchRecipeRequest) ([]model.RecipeResponse, error) {
+func (s *RecipesService) Search(ctx context.Context, request *model.SearchRecipeRequest) ([]model.RecipeSummary, error) {
 	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
 		s.Log.WithError(err).Error("failed to begin transaction")
@@ -35,19 +35,10 @@ func (s *RecipesService) Search(ctx context.Context, request *model.SearchRecipe
 	}
 	defer tx.Rollback()
 
-	var recipes []entity.Recipe
-	if request.Type == "" {
-		recipes, err = s.RecipeRepository.FindAll(tx)
-		if err != nil {
-			s.Log.WithError(err).Error("failed to find recipes")
-			return nil, err
-		}
-	} else {
-		recipes, err = s.RecipeRepository.SearchByType(tx, request.Type)
-		if err != nil {
-			s.Log.WithError(err).Error("failed to find recipes by type")
-			return nil, err
-		}
+	recipeSummries, err := s.RecipeRepository.ListSummaries(tx, request.Type)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to find recipes")
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -55,18 +46,7 @@ func (s *RecipesService) Search(ctx context.Context, request *model.SearchRecipe
 		return nil, err
 	}
 
-	response := []model.RecipeResponse{}
-	for _, recipe := range recipes {
-		response = append(response, model.RecipeResponse{
-			ID:        recipe.ID,
-			Name:      recipe.Name,
-			Type:      recipe.Type,
-			YieldQty:  recipe.YieldQty,
-			YieldUnit: recipe.YieldUnit,
-		})
-	}
-
-	return response, nil
+	return recipeSummries, nil
 }
 
 func (s *RecipesService) AddRecipe(ctx context.Context, request *model.CreateRecipeRequest) (*model.RecipeResponse, validator.ValidatorErrors, error) {

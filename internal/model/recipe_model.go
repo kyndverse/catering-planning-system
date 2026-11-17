@@ -8,6 +8,15 @@ type RecipeResponse struct {
 	YieldUnit string
 }
 
+type RecipeSummary struct {
+	ID         int64
+	Name       string
+	Type       string
+	YieldQty   float64
+	YieldUnit  string
+	ItemCount int
+}
+
 type CreateRecipeRequest struct {
 	Name      string  `form:"name" validate:"required"`
 	Type      string  `form:"type" validate:"required"`
