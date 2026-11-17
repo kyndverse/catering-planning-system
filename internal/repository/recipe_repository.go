@@ -8,17 +8,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type RecipesRepository struct {
+type RecipeRepository struct {
 	Log *logrus.Logger
 }
 
-func NewRecipesRepository(logger *logrus.Logger) *RecipesRepository {
-	return &RecipesRepository{
+func NewRecipesRepository(logger *logrus.Logger) *RecipeRepository {
+	return &RecipeRepository{
 		Log: logger,
 	}
 }
 
-func (r *RecipesRepository) ListSummaries(tx *sql.Tx, recipeType string) ([]model.RecipeSummary, error) {
+func (r *RecipeRepository) ListSummaries(tx *sql.Tx, recipeType string) ([]model.RecipeSummary, error) {
 	query := `
 		SELECT r.id, r.name, r.type, r.yield_qty, r.yield_unit, COUNT(ri.id) AS item_count 
 		FROM recipes r 
@@ -58,7 +58,7 @@ func (r *RecipesRepository) ListSummaries(tx *sql.Tx, recipeType string) ([]mode
 	return recipes, nil
 }
 
-func (p *RecipesRepository) Create(tx *sql.Tx, recipe *entity.Recipe) error {
+func (r *RecipeRepository) Create(tx *sql.Tx, recipe *entity.Recipe) error {
 	query := `
         INSERT INTO recipes (name, type, yield_qty, yield_unit)
         VALUES ($1, $2, $3, $4)
@@ -72,4 +72,53 @@ func (p *RecipesRepository) Create(tx *sql.Tx, recipe *entity.Recipe) error {
 		recipe.YieldQty,
 		recipe.YieldUnit,
 	).Scan(&recipe.ID)
+}
+
+func (r *RecipeRepository) Update(tx *sql.Tx, recipe *entity.Recipe) error {
+	query := `
+		UPDATE recipes
+		SET name=$1, type=$2, yield_qty=$3, yield_unit=$4
+		WHERE id=$5
+		RETURNING id, name, type, yield_qty, yield_unit
+	`
+
+	return tx.QueryRow(
+		query,
+		recipe.Name,
+		recipe.Type,
+		recipe.YieldQty,
+		recipe.YieldUnit,
+		recipe.ID,
+	).Scan(
+		&recipe.ID,
+		&recipe.Name,
+		&recipe.Type,
+		&recipe.YieldQty,
+		&recipe.YieldUnit)
+}
+
+func (r *RecipeRepository) Delete(tx *sql.Tx, recipe *entity.Recipe) error {
+	query := `DELETE FROM recipes WHERE id=$1`
+
+	_, err := tx.Exec(query, recipe.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *RecipeRepository) FindOne(tx *sql.Tx, recipe *entity.Recipe) error {
+	query := `SELECT id, name, type, yield_qty, yield_unit FROM recipes WHERE id=$1 LIMIT 1`
+
+	return tx.QueryRow(
+		query,
+		recipe.ID,
+	).Scan(
+		&recipe.ID,
+		&recipe.Name,
+		&recipe.Type,
+		&recipe.YieldQty,
+		&recipe.YieldUnit,
+	)
 }

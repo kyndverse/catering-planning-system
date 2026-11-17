@@ -9,11 +9,11 @@ type RecipeResponse struct {
 }
 
 type RecipeSummary struct {
-	ID         int64
-	Name       string
-	Type       string
-	YieldQty   float64
-	YieldUnit  string
+	ID        int64
+	Name      string
+	Type      string
+	YieldQty  float64
+	YieldUnit string
 	ItemCount int
 }
 
@@ -22,6 +22,18 @@ type CreateRecipeRequest struct {
 	Type      string  `form:"type" validate:"required"`
 	YieldQty  float64 `form:"yield_qty" validate:"required"`
 	YieldUnit string  `form:"yield_unit" validate:"required"`
+}
+
+type UpdateRecipeRequest struct {
+	ID        int64
+	Name      string  `form:"name"`
+	Type      string  `form:"type"`
+	YieldQty  float64 `form:"yield_qty"`
+	YieldUnit string  `form:"yield_unit"`
+}
+
+type DeleteRecipeRequest struct {
+	ID int64
 }
 
 type SearchRecipeRequest struct {

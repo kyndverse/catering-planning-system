@@ -15,10 +15,10 @@ type RecipesService struct {
 	Log              *logrus.Logger
 	DB               *sql.DB
 	Validator        *validator.Validator
-	RecipeRepository *repository.RecipesRepository
+	RecipeRepository *repository.RecipeRepository
 }
 
-func NewRecipesService(logger *logrus.Logger, db *sql.DB, validator *validator.Validator, recipesRepository *repository.RecipesRepository) *RecipesService {
+func NewRecipesService(logger *logrus.Logger, db *sql.DB, validator *validator.Validator, recipesRepository *repository.RecipeRepository) *RecipesService {
 	return &RecipesService{
 		Log:              logger,
 		DB:               db,
@@ -86,4 +86,102 @@ func (s *RecipesService) AddRecipe(ctx context.Context, request *model.CreateRec
 		YieldQty:  recipe.YieldQty,
 		YieldUnit: recipe.YieldUnit,
 	}, nil, nil
+}
+
+func (s *RecipesService) EditRecipe(ctx context.Context, request *model.UpdateRecipeRequest) (*model.RecipeResponse, validator.ValidatorErrors, error) {
+	fieldErrors := s.Validator.ValidateStruct(request)
+	if fieldErrors != nil {
+		return nil, fieldErrors, nil
+	}
+
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, nil, err
+	}
+	defer tx.Rollback()
+
+	recipe := &entity.Recipe{
+		ID:        request.ID,
+		Name:      request.Name,
+		Type:      request.Type,
+		YieldQty:  request.YieldQty,
+		YieldUnit: request.YieldUnit,
+	}
+
+	if err := s.RecipeRepository.Update(tx, recipe); err != nil {
+		s.Log.WithError(err).Error("failed to update recipe")
+		return nil, nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, nil, err
+	}
+
+	return &model.RecipeResponse{
+		ID:        recipe.ID,
+		Name:      recipe.Name,
+		Type:      recipe.Type,
+		YieldQty:  request.YieldQty,
+		YieldUnit: recipe.YieldUnit,
+	}, nil, nil
+}
+
+func (s *RecipesService) DeleteRecipe(ctx context.Context, request *model.DeleteRecipeRequest) error {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return err
+	}
+	defer tx.Rollback()
+
+	recipe := &entity.Recipe{
+		ID: request.ID,
+	}
+
+	if err := s.RecipeRepository.Delete(tx, recipe); err != nil {
+		s.Log.WithError(err).Error("failed to delete recipe")
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return err
+	}
+
+	return nil
+}
+
+func (s *RecipesService) GetRecipeById(ctx context.Context, ID int64) (*model.RecipeResponse, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	recipe := &entity.Recipe{
+		ID: ID,
+	}
+
+	if err := s.RecipeRepository.FindOne(tx, recipe); err != nil {
+		s.Log.WithError(err).Error("failed to get recipe")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	response := &model.RecipeResponse{
+		ID:        recipe.ID,
+		Name:      recipe.Name,
+		Type:      recipe.Type,
+		YieldQty:  recipe.YieldQty,
+		YieldUnit: recipe.YieldUnit,
+	}
+
+	return response, nil
 }

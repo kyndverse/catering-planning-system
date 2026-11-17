@@ -15,12 +15,14 @@ import (
 type PageHandler struct {
 	Renderer          *web.Renderer
 	IngredientService *service.IngredientService
+	RecipeService     *service.RecipesService
 }
 
-func NewPageHandler(renderer *web.Renderer, ingredientService *service.IngredientService) *PageHandler {
+func NewPageHandler(renderer *web.Renderer, ingredientService *service.IngredientService, recipeService *service.RecipesService) *PageHandler {
 	return &PageHandler{
 		Renderer:          renderer,
 		IngredientService: ingredientService,
+		RecipeService:     recipeService,
 	}
 }
 
@@ -152,6 +154,46 @@ func (h *PageHandler) CreateRecipeForm(w http.ResponseWriter, r *http.Request) {
 		"title":       "Create Recipe",
 		"isEdit":      false,
 		"submitLabel": "Create",
+		"cancelURL":   "/recipes",
+		"types":       []string{"PREPARED", "COMPONENT", "MENU"},
+		"units":       []string{"g", "ml", "portion"},
+		"RecipeForm":  recipeFrom,
+	}
+
+	h.Renderer.Render(w, "recipes/form.html", data)
+}
+
+func (h *PageHandler) EditRecipeForm(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := h.RecipeService.GetRecipeById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch recipe", http.StatusInternalServerError)
+		return
+	}
+
+	recipeFrom := model.FormData[model.UpdateRecipeRequest]{
+		Judul:  "Update Recipe",
+		Action: fmt.Sprintf("/recipes/%d/edit", ID),
+		Data: model.UpdateRecipeRequest{
+			Name:      recipe.Name,
+			Type:      recipe.Type,
+			YieldQty:  recipe.YieldQty,
+			YieldUnit: recipe.YieldUnit,
+		},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":       "Update Recipe",
+		"isEdit":      true,
+		"submitLabel": "Update",
 		"cancelURL":   "/recipes",
 		"types":       []string{"PREPARED", "COMPONENT", "MENU"},
 		"units":       []string{"g", "ml", "portion"},

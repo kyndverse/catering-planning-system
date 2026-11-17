@@ -35,7 +35,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup handler
 	renderer := web.NewRenderer()
-	pageHandler := handler.NewPageHandler(renderer, ingredientService)
+	pageHandler := handler.NewPageHandler(renderer, ingredientService, recipeService)
 	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
 	recipeHandler := handler.NewRecipesHandler(config.Logger, renderer, config.Decoder, recipeService)
 
