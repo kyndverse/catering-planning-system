@@ -98,8 +98,6 @@ func (h *IngredientHandler) EditIngredient(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	h.Log.Info("ID params adalah: ", ID)
-
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -160,19 +158,7 @@ func (h *IngredientHandler) DeleteIngredient(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	ingredients, err := h.IngredientService.GetAllIngredients(r.Context())
-	if err != nil {
-		h.Log.WithError(err).Error("error get ingredients")
-		http.Error(w, "Failed to retrieve ingredients", http.StatusInternalServerError)
-		return
-	}
-
-	data := map[string]any{
-		"title":       "Ingredients",
-		"ingredients": ingredients,
-	}
-
-	h.Renderer.Render(w, "ingredients/index.html", data)
+	http.Redirect(w, r, "/ingredients", http.StatusSeeOther)
 }
 
 func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Request) {
@@ -249,7 +235,7 @@ func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Re
 		}
 
 		data := map[string]any{
-			"title":          "Edit Product",
+			"title":          "Create Ingredient Price",
 			"currentPrice":   currentPrice,
 			"Ingredient":     ing,
 			"Prices":         rows,
