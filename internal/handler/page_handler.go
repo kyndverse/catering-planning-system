@@ -38,7 +38,7 @@ func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Reques
 	ingredientForm := model.FormData[model.CreateIngredientRequest]{
 		Judul:  "Create Ingredient",
 		Action: "/ingredients",
-		Data:   nil,
+		Data:   model.CreateIngredientRequest{},
 		Errors: nil,
 	}
 
@@ -71,7 +71,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	ingredientForm := model.FormData[model.UpdateIngredientRequest]{
 		Judul:  "Update Ingredient",
 		Action: fmt.Sprintf("/ingredients/%d/edit", ID),
-		Data: &model.UpdateIngredientRequest{
+		Data: model.UpdateIngredientRequest{
 			Name:                   ingredient.Name,
 			BaseUnit:               ingredient.BaseUnit,
 			PurchaseUnit:           ingredient.PurchaseUnit,
@@ -130,7 +130,7 @@ func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request
 	ingredientForm := model.FormData[model.CreateIngredientPriceRequest]{
 		Judul:  "Ingredient Price History",
 		Action: fmt.Sprintf("/ingredients/%d/prices", ID),
-		Data:   nil,
+		Data:   model.CreateIngredientPriceRequest{},
 		Errors: nil,
 	}
 
@@ -150,7 +150,7 @@ func (h *PageHandler) CreateRecipeForm(w http.ResponseWriter, r *http.Request) {
 	recipeFrom := model.FormData[model.CreateRecipeRequest]{
 		Judul:  "Create Recipe",
 		Action: "/recipes",
-		Data:   nil,
+		Data:   model.CreateRecipeRequest{},
 		Errors: nil,
 	}
 
@@ -185,7 +185,7 @@ func (h *PageHandler) EditRecipeForm(w http.ResponseWriter, r *http.Request) {
 	recipeFrom := model.FormData[model.UpdateRecipeRequest]{
 		Judul:  "Update Recipe",
 		Action: fmt.Sprintf("/recipes/%d/edit", ID),
-		Data: &model.UpdateRecipeRequest{
+		Data: model.UpdateRecipeRequest{
 			Name:      recipe.Name,
 			Type:      recipe.Type,
 			YieldQty:  recipe.YieldQty,

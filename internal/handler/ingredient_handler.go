@@ -70,7 +70,7 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 		ingredientForm := model.FormData[model.CreateIngredientRequest]{
 			Judul:  "Create Ingredient",
 			Action: "/ingredients",
-			Data:   request,
+			Data:   *request,
 			Errors: formError,
 		}
 
@@ -121,7 +121,7 @@ func (h *IngredientHandler) EditIngredient(w http.ResponseWriter, r *http.Reques
 		ingredientForm := model.FormData[model.UpdateIngredientRequest]{
 			Judul:  "Update Ingredient",
 			Action: fmt.Sprintf("/ingredients/%d/edit", ID),
-			Data:   request,
+			Data:   *request,
 			Errors: formError,
 		}
 
@@ -230,7 +230,7 @@ func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Re
 		ingredientForm := model.FormData[model.CreateIngredientPriceRequest]{
 			Judul:  "Create Ingredient Price",
 			Action: fmt.Sprintf("/ingredients/%d/prices", ID),
-			Data:   request,
+			Data:   *request,
 			Errors: formError,
 		}
 

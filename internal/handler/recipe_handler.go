@@ -75,7 +75,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 		recipeFrom := model.FormData[model.CreateRecipeRequest]{
 			Judul:  "Create Recipe",
 			Action: "/recipes",
-			Data:   request,
+			Data:   *request,
 			Errors: formError,
 		}
 
@@ -128,7 +128,7 @@ func (h *RecipeHandler) EditRecipe(w http.ResponseWriter, r *http.Request) {
 		recipeFrom := model.FormData[model.UpdateRecipeRequest]{
 			Judul:  "Update Recipe",
 			Action: fmt.Sprintf("/ingredients/%d/edit", ID),
-			Data:   request,
+			Data:   *request,
 			Errors: formError,
 		}
 
