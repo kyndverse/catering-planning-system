@@ -65,7 +65,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	}
 
 	ingredientForm := model.FormData[model.UpdateIngredientRequest]{
-		Judul:  "Edit Ingredient",
+		Judul:  "Update Ingredient",
 		Action: fmt.Sprintf("/ingredients/%d/edit", ID),
 		Data: &model.UpdateIngredientRequest{
 			Name:                   ingredient.Name,
@@ -77,7 +77,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	}
 
 	data := map[string]any{
-		"title":          "Edit Ingredient",
+		"title":          "Update Ingredient",
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         true,
@@ -124,14 +124,14 @@ func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request
 	}
 
 	ingredientForm := model.FormData[model.CreateIngredientPriceRequest]{
-		Judul:  "Ingredient Price",
+		Judul:  "Ingredient Price History",
 		Action: fmt.Sprintf("/ingredients/%d/prices", ID),
 		Data:   nil,
 		Errors: nil,
 	}
 
 	data := map[string]any{
-		"title":          "Riwayat Harga",
+		"title":          "Price History",
 		"currentPrice":   currentPrice,
 		"Ingredient":     ing,
 		"Prices":         rows,
