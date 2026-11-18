@@ -32,14 +32,14 @@ func (h *PageHandler) HomePage(w http.ResponseWriter, r *http.Request) {
 
 func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Request) {
 	ingredientForm := model.FormData[model.CreateIngredientRequest]{
-		Judul:  "Add Ingredients",
+		Judul:  "Create Ingredient",
 		Action: "/ingredients",
 		Data:   model.CreateIngredientRequest{},
 		Errors: nil,
 	}
 
 	data := map[string]any{
-		"title":          "Create Product",
+		"title":          "Create Ingredient",
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         false,
@@ -65,7 +65,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	}
 
 	ingredientForm := model.FormData[model.UpdateIngredientRequest]{
-		Judul:  "Edit Ingredients",
+		Judul:  "Edit Ingredient",
 		Action: fmt.Sprintf("/ingredients/%d/edit", ID),
 		Data: model.UpdateIngredientRequest{
 			Name:                   ingredient.Name,
@@ -77,7 +77,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 	}
 
 	data := map[string]any{
-		"title":          "Edit Product",
+		"title":          "Edit Ingredient",
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         true,
