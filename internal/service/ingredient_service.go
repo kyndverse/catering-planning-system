@@ -144,7 +144,7 @@ func (p *IngredientService) AddIngredient(ctx context.Context, request *model.Cr
 	}
 	defer tx.Rollback()
 
-	exists, err := p.IngredientRepository.ExistsByNameExceptID(tx, request.Name, request.ID)
+	exists, err := p.IngredientRepository.ExistsByName(tx, request.Name)
 	if err != nil {
 		p.Log.WithError(err).Error("failed to check ingredient name")
 		return nil, nil, err
@@ -159,7 +159,6 @@ func (p *IngredientService) AddIngredient(ctx context.Context, request *model.Cr
 	}
 
 	ingredient := &entity.Ingredient{
-		ID:                     request.ID,
 		Name:                   request.Name,
 		BaseUnit:               request.BaseUnit,
 		PurchaseUnit:           request.PurchaseUnit,

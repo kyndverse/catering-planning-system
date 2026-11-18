@@ -77,11 +77,11 @@ func (p *IngredientRepository) FindOneByID(tx *sql.Tx, ingredient *entity.Ingred
 		&ingredient.BaseQtyPerPurchaseUnit)
 }
 
-func (p *IngredientRepository) ExistsByNameExceptID(tx *sql.Tx, name string, ID int64) (bool, error) {
-	query := `SELECT EXISTS (SELECT 1 FROM ingredients WHERE name=$1 AND id!=$2)`
+func (p *IngredientRepository) ExistsByName(tx *sql.Tx, name string) (bool, error) {
+	query := `SELECT EXISTS (SELECT 1 FROM ingredients WHERE name=$1)`
 
 	var exists bool
-	if err := tx.QueryRow(query, name, ID).Scan(&exists); err != nil {
+	if err := tx.QueryRow(query, name).Scan(&exists); err != nil {
 		return false, nil
 	}
 

@@ -11,7 +11,6 @@ type IngredientResponse struct {
 }
 
 type CreateIngredientRequest struct {
-	ID                     int64
 	Name                   string `form:"name" validate:"required"`
 	BaseUnit               string `form:"base_unit" validate:"required"`
 	PurchaseUnit           string `form:"purchase_unit" validate:"required"`
