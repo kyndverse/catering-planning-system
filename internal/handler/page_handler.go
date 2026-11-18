@@ -27,7 +27,11 @@ func NewPageHandler(renderer *web.Renderer, ingredientService *service.Ingredien
 }
 
 func (h *PageHandler) HomePage(w http.ResponseWriter, r *http.Request) {
-	h.Renderer.Render(w, "home/index.html", nil)
+	data := map[string]string{
+		"title": "Home",
+	}
+
+	h.Renderer.Render(w, "home/index.html", data)
 }
 
 func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Request) {
