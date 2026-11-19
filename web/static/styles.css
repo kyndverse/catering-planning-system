@@ -343,6 +343,14 @@ td.empty {
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
+
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.field select option {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 .field textarea {
