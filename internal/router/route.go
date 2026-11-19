@@ -43,5 +43,8 @@ func (c *RouteConfig) Setup() {
 		r.Get("/{id}/edit", c.PageHandler.EditRecipeForm)
 		r.Post("/{id}/edit", c.RecipeHandler.EditRecipe)
 		r.Get("/{id}", c.RecipeHandler.GetRecipeDetail)
+		r.Post("/{id}/items", c.RecipeHandler.AddRecipeItem)
+		r.Post("/{id}/items/{itemID}", c.RecipeHandler.UpdateRecipeItem)
+		r.Post("/{id}/items/{itemID}/delete", c.RecipeHandler.DeleteRecipeItem)
 	})
 }

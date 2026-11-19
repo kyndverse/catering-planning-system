@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"golang-web/internal/domain/entity"
 	"golang-web/internal/model"
 
@@ -231,4 +232,114 @@ func (r *RecipeRepository) ExplodeToIngredients(tx *sql.Tx, recipeID int64, qty 
 		reqs = append(reqs, q)
 	}
 	return reqs, rows.Err()
+}
+
+func (r *RecipeRepository) RecipeExists(tx *sql.Tx, id int64) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(`SELECT EXISTS (SELECT 1 FROM recipes WHERE id = $1)`, id).Scan(&exists)
+	return exists, err
+}
+
+func (r *RecipeRepository) IngredientExists(tx *sql.Tx, id int64) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(`SELECT EXISTS (SELECT 1 FROM ingredients WHERE id = $1)`, id).Scan(&exists)
+	return exists, err
+}
+
+// FindType mengembalikan jenis resep (PREPARED/COMPONENT/MENU).
+// Mengembalikan sql.ErrNoRows jika resep tidak ada.
+func (r *RecipeRepository) FindType(tx *sql.Tx, id int64) (string, error) {
+	var recipeType string
+	err := tx.QueryRow(`SELECT type FROM recipes WHERE id = $1`, id).Scan(&recipeType)
+	return recipeType, err
+}
+
+// WouldCreateCycle: true jika menjadikan subRecipeID sebagai isi recipeID akan
+// membuat siklus, yaitu subRecipeID ternyata leluhur recipeID (langsung maupun
+// tidak langsung memuat recipeID). Kasus subRecipeID == recipeID dicek terpisah.
+func (r *RecipeRepository) WouldCreateCycle(tx *sql.Tx, recipeID, subRecipeID int64) (bool, error) {
+	query := `
+		WITH RECURSIVE ancestors AS (
+			SELECT recipe_id FROM recipe_items WHERE sub_recipe_id = $1
+			UNION
+			SELECT ri.recipe_id
+			FROM recipe_items ri
+			JOIN ancestors a ON ri.sub_recipe_id = a.recipe_id
+		)
+		SELECT EXISTS (SELECT 1 FROM ancestors WHERE recipe_id = $2)`
+
+	var cycle bool
+	err := tx.QueryRow(query, recipeID, subRecipeID).Scan(&cycle)
+	return cycle, err
+}
+
+// ItemExists: true jika bahan/sub-resep itu sudah menjadi isi resep ini.
+func (r *RecipeRepository) ItemExists(tx *sql.Tx, recipeID int64, kind string, targetID int64) (bool, error) {
+	var query string
+	switch kind {
+	case model.ItemKindIngredient:
+		query = `SELECT EXISTS (SELECT 1 FROM recipe_items WHERE recipe_id = $1 AND ingredient_id = $2)`
+	case model.ItemKindRecipe:
+		query = `SELECT EXISTS (SELECT 1 FROM recipe_items WHERE recipe_id = $1 AND sub_recipe_id = $2)`
+	default:
+		return false, fmt.Errorf("unknown item kind %q", kind)
+	}
+
+	var exists bool
+	err := tx.QueryRow(query, recipeID, targetID).Scan(&exists)
+	return exists, err
+}
+
+// AddItem menambah satu baris recipe_items. quantity berupa string desimal
+// yang sudah divalidasi; dikirim apa adanya ke NUMERIC (tanpa float).
+func (r *RecipeRepository) AddItem(tx *sql.Tx, recipeID int64, kind string, targetID int64, quantity string) error {
+	var ingredientID, subRecipeID sql.NullInt64
+
+	switch kind {
+	case model.ItemKindIngredient:
+		ingredientID = sql.NullInt64{Int64: targetID, Valid: true}
+	case model.ItemKindRecipe:
+		subRecipeID = sql.NullInt64{Int64: targetID, Valid: true}
+	default:
+		return fmt.Errorf("unknown item kind %q", kind)
+	}
+
+	query := `
+		INSERT INTO recipe_items (recipe_id, ingredient_id, sub_recipe_id, quantity)
+		VALUES ($1, $2, $3, $4::numeric)`
+
+	_, err := tx.Exec(query, recipeID, ingredientID, subRecipeID, quantity)
+	return err
+}
+
+func (r *RecipeRepository) UpdateItemQuantity(tx *sql.Tx, recipeID, itemID int64, quantity string) (bool, error) {
+	query := `UPDATE recipe_items SET quantity = $3::numeric WHERE id = $1 AND recipe_id = $2`
+
+	res, err := tx.Exec(query, itemID, recipeID, quantity)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
+}
+
+// DeleteItem menghapus satu isi dari resep. Mengembalikan false jika tidak ada
+// baris yang cocok (item tidak ada, atau bukan milik resep di URL).
+func (r *RecipeRepository) DeleteItem(tx *sql.Tx, recipeID, itemID int64) (bool, error) {
+	query := `DELETE FROM recipe_items WHERE id = $1 AND recipe_id = $2`
+
+	res, err := tx.Exec(query, itemID, recipeID)
+	if err != nil {
+		return false, err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return affected > 0, nil
 }

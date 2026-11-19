@@ -3,10 +3,15 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"golang-web/internal/domain/entity"
 	"golang-web/internal/model"
 	"golang-web/internal/repository"
 	"golang-web/internal/validator"
+	"math/big"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -250,4 +255,205 @@ func (s *RecipesService) ExplodeToIngredients(ctx context.Context, ID int64, qty
 	}
 
 	return reqs, nil
+}
+
+func (s *RecipesService) AddRecipeItem(ctx context.Context, request *model.AddRecipeItemRequest) (validator.ValidatorErrors, error) {
+	if fieldErrors := s.Validator.ValidateStruct(request); fieldErrors != nil {
+		return fieldErrors, nil
+	}
+
+	kind, targetID, ok := parseItemRef(request.Item)
+	if !ok {
+		return fieldError("item", "Pilih bahan baku atau sub-resep yang valid"), nil
+	}
+
+	quantity, ok := parsePositiveQuantity(request.Quantity)
+	if !ok {
+		return fieldError("quantity", "Jumlah harus angka lebih dari 0 (maksimal 6 angka desimal)"), nil
+	}
+
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	exists, err := s.RecipeRepository.RecipeExists(tx, request.RecipeID)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to check recipe")
+		return nil, err
+	}
+	if !exists {
+		return nil, err
+	}
+
+	message, err := s.checkItemRules(tx, request.RecipeID, kind, targetID)
+	if err != nil {
+		return nil, err
+	}
+	if message != "" {
+		return fieldError("item", message), nil
+	}
+
+	if err := s.RecipeRepository.AddItem(tx, request.RecipeID, kind, targetID, quantity); err != nil {
+		s.Log.WithError(err).Error("failed to add recipe item")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// checkItemRules memeriksa aturan bisnis. Mengembalikan pesan untuk pengguna
+// (string kosong = lolos) atau error jika query gagal.
+func (s *RecipesService) checkItemRules(tx *sql.Tx, recipeID int64, kind string, targetID int64) (string, error) {
+	switch kind {
+	case model.ItemKindIngredient:
+		exists, err := s.RecipeRepository.IngredientExists(tx, targetID)
+		if err != nil {
+			s.Log.WithError(err).Error("failed to check ingredient")
+			return "", err
+		}
+		if !exists {
+			return "Bahan baku tidak ditemukan", nil
+		}
+
+	case model.ItemKindRecipe:
+		if targetID == recipeID {
+			return "Resep tidak boleh memuat dirinya sendiri", nil
+		}
+
+		subType, err := s.RecipeRepository.FindType(tx, targetID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return "Sub-resep tidak ditemukan", nil
+		}
+		if err != nil {
+			s.Log.WithError(err).Error("failed to find sub recipe")
+			return "", err
+		}
+		if subType == "MENU" {
+			return "Menu tidak boleh dijadikan sub-resep", nil
+		}
+
+		cycle, err := s.RecipeRepository.WouldCreateCycle(tx, recipeID, targetID)
+		if err != nil {
+			s.Log.WithError(err).Error("failed to check recipe cycle")
+			return "", err
+		}
+		if cycle {
+			return "Sub-resep ini akan membuat siklus (resep saling memuat)", nil
+		}
+	}
+
+	// Satu bahan/sub-resep hanya boleh muncul sekali per resep; ubah jumlahnya
+	// di tabel Isi Resep. Hapus blok ini jika Anda ingin mengizinkan duplikat.
+	dup, err := s.RecipeRepository.ItemExists(tx, recipeID, kind, targetID)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to check duplicate item")
+		return "", err
+	}
+	if dup {
+		return "Isi ini sudah ada di resep. Ubah jumlahnya di tabel Isi Resep.", nil
+	}
+
+	return "", nil
+}
+
+// parseItemRef mengurai "ingredient:4" / "recipe:2".
+func parseItemRef(v string) (kind string, id int64, ok bool) {
+	k, idStr, found := strings.Cut(strings.TrimSpace(v), ":")
+	if !found || (k != model.ItemKindIngredient && k != model.ItemKindRecipe) {
+		return "", 0, false
+	}
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil || id <= 0 {
+		return "", 0, false
+	}
+	return k, id, true
+}
+
+// Menolak "1e3", "1/3", "-5", "abc".
+var itemQtyPattern = regexp.MustCompile(`^\d{1,12}(\.\d{1,6})?$`)
+
+// parsePositiveQuantity memastikan string desimal valid dan > 0.
+func parsePositiveQuantity(raw string) (string, bool) {
+	raw = strings.TrimSpace(raw)
+	if !itemQtyPattern.MatchString(raw) {
+		return "", false
+	}
+	r, ok := new(big.Rat).SetString(raw)
+	if !ok || r.Sign() <= 0 {
+		return "", false
+	}
+	return raw, true
+}
+
+func fieldError(field, message string) validator.ValidatorErrors {
+	return validator.ValidatorErrors{field: message}
+}
+
+func (s *RecipesService) UpdateRecipeItem(ctx context.Context, request *model.UpdateRecipeItemRequest) (validator.ValidatorErrors, error) {
+	if fieldErrors := s.Validator.ValidateStruct(request); fieldErrors != nil {
+		return fieldErrors, nil
+	}
+
+	quantity, ok := parsePositiveQuantity(request.Quantity)
+	if !ok {
+		return fieldError("quantity", "Jumlah harus angka lebih dari 0 (maksimal 6 angka desimal)"), nil
+	}
+
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	updated, err := s.RecipeRepository.UpdateItemQuantity(tx, request.RecipeID, request.ItemID, quantity)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to update recipe item")
+		return nil, err
+	}
+	if !updated {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+// DeleteRecipeItem menghapus satu isi dari resep.
+// Mengembalikan ErrRecipeItemNotFound jika item tidak ada / bukan milik resep itu.
+func (s *RecipesService) DeleteRecipeItem(ctx context.Context, request *model.DeleteRecipeItemRequest) error {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return err
+	}
+	defer tx.Rollback()
+
+	deleted, err := s.RecipeRepository.DeleteItem(tx, request.RecipeID, request.ItemID)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to delete recipe item")
+		return err
+	}
+	if !deleted {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return err
+	}
+
+	return nil
 }

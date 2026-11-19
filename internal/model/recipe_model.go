@@ -50,8 +50,9 @@ type RecipeItemView struct {
 }
 
 type AddRecipeItemRequest struct {
-	Item     string
-	Quantity string
+	RecipeID int64
+	Item     string `form:"item" validate:"required"`     // "ingredient:4" atau "recipe:2"
+	Quantity string `form:"quantity" validate:"required"` // string desimal, tanpa float
 }
 
 type SubRecipeItemOption struct {
@@ -64,4 +65,23 @@ type IngredientRequirement struct {
 	IngredientName string
 	Quantity       string
 	Unit           string
+}
+
+const (
+	ItemKindIngredient = "ingredient"
+	ItemKindRecipe     = "recipe"
+)
+
+// UpdateRecipeItemRequest: ubah jumlah satu isi resep.
+// RecipeID dan ItemID berasal dari path, BUKAN dari form, maka form:"-".
+type UpdateRecipeItemRequest struct {
+	RecipeID int64  `form:"-"`
+	ItemID   int64  `form:"-"`
+	Quantity string `form:"quantity" validate:"required"`
+}
+
+// DeleteRecipeItemRequest: hapus satu isi resep (keduanya dari path).
+type DeleteRecipeItemRequest struct {
+	RecipeID int64
+	ItemID   int64
 }
