@@ -205,7 +205,7 @@ func (h *RecipeHandler) AddRecipeItem(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid form data", http.StatusBadRequest)
 		return
 	}
-	request.RecipeID = ID // selalu dari path
+	request.RecipeID = ID
 
 	formError, err := h.RecipeService.AddRecipeItem(r.Context(), request)
 	if err != nil {
@@ -218,7 +218,7 @@ func (h *RecipeHandler) AddRecipeItem(w http.ResponseWriter, r *http.Request) {
 		itemForm := model.FormData[model.AddRecipeItemRequest]{
 			Judul:  "Add Recipe Item",
 			Action: fmt.Sprintf("/recipes/%d/items", ID),
-			Data:   *request, // isi ulang pilihan dan jumlah yang tadi dikirim
+			Data:   *request,
 			Errors: formError,
 		}
 		h.renderRecipeDetail(w, r, ID, itemForm, nil)
@@ -228,7 +228,6 @@ func (h *RecipeHandler) AddRecipeItem(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/recipes/%d", ID), http.StatusSeeOther)
 }
 
-// UpdateRecipeItem menangani POST /recipes/{id}/items/{itemID}.
 func (h *RecipeHandler) UpdateRecipeItem(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -252,7 +251,7 @@ func (h *RecipeHandler) UpdateRecipeItem(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Invalid form data", http.StatusBadRequest)
 		return
 	}
-	request.RecipeID = ID // selalu dari path
+	request.RecipeID = ID
 	request.ItemID = itemID
 
 	formError, err := h.RecipeService.UpdateRecipeItem(r.Context(), request)
@@ -263,15 +262,17 @@ func (h *RecipeHandler) UpdateRecipeItem(w http.ResponseWriter, r *http.Request)
 	}
 
 	if formError != nil {
-		// Form ubah jumlah ada di dalam tabel, jadi pesan error ditampilkan di bagian atas halaman.
-		h.renderRecipeDetail(w, r, ID, newItemForm(ID), formError)
+		itemForm := model.FormData[model.AddRecipeItemRequest]{
+			Action: fmt.Sprintf("/recipes/%d/items", ID),
+		}
+
+		h.renderRecipeDetail(w, r, ID, itemForm, formError)
 		return
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/recipes/%d", ID), http.StatusSeeOther)
 }
 
-// DeleteRecipeItem menangani POST /recipes/{id}/items/{itemID}/delete.
 func (h *RecipeHandler) DeleteRecipeItem(w http.ResponseWriter, r *http.Request) {
 	ID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -296,9 +297,7 @@ func (h *RecipeHandler) DeleteRecipeItem(w http.ResponseWriter, r *http.Request)
 	http.Redirect(w, r, fmt.Sprintf("/recipes/%d", ID), http.StatusSeeOther)
 }
 
-// renderRecipeDetail dipakai bersama oleh GetRecipeDetail (GET) dan handler
-// yang perlu menampilkan ulang halaman detail dengan error (POST gagal).
-// pageErrors tampil di bagian atas halaman (untuk form di dalam tabel); boleh nil.
+// helper
 func (h *RecipeHandler) renderRecipeDetail(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -357,11 +356,4 @@ func (h *RecipeHandler) renderRecipeDetail(
 	}
 
 	h.Renderer.Render(w, "recipes/show.html", data)
-}
-
-// newItemForm membuat form "Tambah Isi" yang kosong untuk resep ID.
-func newItemForm(recipeID int64) model.FormData[model.AddRecipeItemRequest] {
-	return model.FormData[model.AddRecipeItemRequest]{
-		Action: fmt.Sprintf("/recipes/%d/items", recipeID),
-	}
 }

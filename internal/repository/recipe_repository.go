@@ -246,17 +246,13 @@ func (r *RecipeRepository) IngredientExists(tx *sql.Tx, id int64) (bool, error) 
 	return exists, err
 }
 
-// FindType mengembalikan jenis resep (PREPARED/COMPONENT/MENU).
-// Mengembalikan sql.ErrNoRows jika resep tidak ada.
 func (r *RecipeRepository) FindType(tx *sql.Tx, id int64) (string, error) {
 	var recipeType string
 	err := tx.QueryRow(`SELECT type FROM recipes WHERE id = $1`, id).Scan(&recipeType)
 	return recipeType, err
 }
 
-// WouldCreateCycle: true jika menjadikan subRecipeID sebagai isi recipeID akan
-// membuat siklus, yaitu subRecipeID ternyata leluhur recipeID (langsung maupun
-// tidak langsung memuat recipeID). Kasus subRecipeID == recipeID dicek terpisah.
+// WouldCreateCycle: true jika menjadikan subRecipeID sebagai isi recipeID akan membuat siklus
 func (r *RecipeRepository) WouldCreateCycle(tx *sql.Tx, recipeID, subRecipeID int64) (bool, error) {
 	query := `
 		WITH RECURSIVE ancestors AS (
@@ -290,8 +286,6 @@ func (r *RecipeRepository) ItemExists(tx *sql.Tx, recipeID int64, kind string, t
 	return exists, err
 }
 
-// AddItem menambah satu baris recipe_items. quantity berupa string desimal
-// yang sudah divalidasi; dikirim apa adanya ke NUMERIC (tanpa float).
 func (r *RecipeRepository) AddItem(tx *sql.Tx, recipeID int64, kind string, targetID int64, quantity string) error {
 	var ingredientID, subRecipeID sql.NullInt64
 
@@ -327,8 +321,6 @@ func (r *RecipeRepository) UpdateItemQuantity(tx *sql.Tx, recipeID, itemID int64
 	return affected > 0, nil
 }
 
-// DeleteItem menghapus satu isi dari resep. Mengembalikan false jika tidak ada
-// baris yang cocok (item tidak ada, atau bukan milik resep di URL).
 func (r *RecipeRepository) DeleteItem(tx *sql.Tx, recipeID, itemID int64) (bool, error) {
 	query := `DELETE FROM recipe_items WHERE id = $1 AND recipe_id = $2`
 

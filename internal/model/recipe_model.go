@@ -72,15 +72,12 @@ const (
 	ItemKindRecipe     = "recipe"
 )
 
-// UpdateRecipeItemRequest: ubah jumlah satu isi resep.
-// RecipeID dan ItemID berasal dari path, BUKAN dari form, maka form:"-".
 type UpdateRecipeItemRequest struct {
-	RecipeID int64  `form:"-"`
-	ItemID   int64  `form:"-"`
+	RecipeID int64
+	ItemID   int64
 	Quantity string `form:"quantity" validate:"required"`
 }
 
-// DeleteRecipeItemRequest: hapus satu isi resep (keduanya dari path).
 type DeleteRecipeItemRequest struct {
 	RecipeID int64
 	ItemID   int64

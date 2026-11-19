@@ -82,6 +82,10 @@
   <section>
     <h2 class="section-title">Tambah Isi</h2>
 
+    {{with index .errors "Error"}}
+      <div class="form-errors">{{.}}</div>
+    {{end}}
+
     <form method="post" action="{{.itemForm.Action}}" class="form">
       <div class="field">
         <label for="item">Bahan Baku atau Sub-Resep</label>
