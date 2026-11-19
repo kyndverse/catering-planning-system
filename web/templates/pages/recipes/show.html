@@ -3,7 +3,9 @@
   <div>
     <div class="header-title">
       <h1>{{.recipe.Name}}</h1>
-      {{template "recipe-type-badge" .recipe.Type}}
+       <span class="badge{{if eq .Type "MENU"}} badge--current{{else if eq .Type "INGREDIENT"}} badge--muted{{end}}">
+          {{if eq .recipe.Type "PREPARED"}}Olahan{{else if eq .recipe.Type "COMPONENT"}}Komponen{{else if eq .recipe.Type "MENU"}}Menu{{else if eq .recipe.Type "INGREDIENT"}}Bahan{{else}}{{.recipe.Type}}{{end}}
+        </span>
     </div>
     <p class="page-subtitle">Hasil resep: {{.recipe.YieldQty}} {{.recipe.YieldUnit}}</p>
   </div>
@@ -80,8 +82,6 @@
   <section>
     <h2 class="section-title">Tambah Isi</h2>
 
-    {{template "form-errors" .itemForm.Errors}}
-
     <form method="post" action="{{.itemForm.Action}}" class="form">
       <div class="field">
         <label for="item">Bahan Baku atau Sub-Resep</label>
@@ -89,7 +89,7 @@
           <option value="">Pilih…</option>
           <optgroup label="Bahan Baku">
             {{range .ingredientOptions}}
-            <option value="ingredient:{{.ID}}" {{if eq $.itemForm.Data.Item (printf "ingredient:%d" .ID)}}selected{{end}}>{{.Name}} ({{.Unit}})</option>
+            <option value="ingredient:{{.ID}}" {{if eq $.itemForm.Data.Item (printf "ingredient:%d" .ID)}}selected{{end}}>{{.Name}} ({{.BaseUnit}})</option>
             {{end}}
           </optgroup>
           <optgroup label="Sub-Resep">
@@ -123,22 +123,7 @@
         <button type="submit" class="button">Tambah</button>
       </div>
     </form>
-  </section>
-
-  <!-- ============ Struktur (pohon) ============ -->
-  <section>
-    <h2 class="section-title">Struktur Resep</h2>
-
-    <div class="panel">
-      {{with .tree}}
-      <ul class="tree">
-        {{template "tree-node" .}}
-      </ul>
-      {{else}}
-      <p class="muted">Belum ada struktur untuk ditampilkan.</p>
-      {{end}}
-    </div>
-  </section>
+  </section> 
 
   <!-- ============ Ledakan: kebutuhan bahan baku ============ -->
   <section>

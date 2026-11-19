@@ -185,3 +185,69 @@ func (s *RecipesService) GetRecipeById(ctx context.Context, ID int64) (*model.Re
 
 	return response, nil
 }
+
+func (s *RecipesService) ListItemsByRecipeID(ctx context.Context, ID int64) ([]model.RecipeItemView, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	items, err := s.RecipeRepository.ListItemsByRecipeID(tx, ID)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to get recipe items")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (s *RecipesService) ListSubRecipeOptions(ctx context.Context, ID int64) ([]model.SubRecipeItemOption, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	items, err := s.RecipeRepository.ListSubRecipeOptions(tx, ID)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to get sub recipe option")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return items, nil
+}
+
+func (s *RecipesService) ExplodeToIngredients(ctx context.Context, ID int64, qty string) ([]model.IngredientRequirement, error) {
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to begin transaction")
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	reqs, err := s.RecipeRepository.ExplodeToIngredients(tx, ID, qty)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to explode recipe")
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		s.Log.WithError(err).Error("failed to commit transaction")
+		return nil, err
+	}
+
+	return reqs, nil
+}

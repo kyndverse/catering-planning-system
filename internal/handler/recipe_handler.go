@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"golang-web/internal/handler/view"
 	"golang-web/internal/model"
 	"golang-web/internal/service"
 	"golang-web/web"
@@ -13,18 +14,20 @@ import (
 )
 
 type RecipeHandler struct {
-	Log           *logrus.Logger
-	Renderer      *web.Renderer
-	Decoder       *form.Decoder
-	RecipeService *service.RecipesService
+	Log               *logrus.Logger
+	Renderer          *web.Renderer
+	Decoder           *form.Decoder
+	RecipeService     *service.RecipesService
+	IngredientService *service.IngredientService
 }
 
-func NewRecipesHandler(logger *logrus.Logger, renderer *web.Renderer, decoder *form.Decoder, recipeService *service.RecipesService) *RecipeHandler {
+func NewRecipesHandler(logger *logrus.Logger, renderer *web.Renderer, decoder *form.Decoder, recipeService *service.RecipesService, ingredientService *service.IngredientService) *RecipeHandler {
 	return &RecipeHandler{
-		Log:           logger,
-		Renderer:      renderer,
-		Decoder:       decoder,
-		RecipeService: recipeService,
+		Log:               logger,
+		Renderer:          renderer,
+		Decoder:           decoder,
+		RecipeService:     recipeService,
+		IngredientService: ingredientService,
 	}
 }
 
@@ -168,4 +171,71 @@ func (h *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/recipes", http.StatusSeeOther)
+}
+
+func (h *RecipeHandler) GetRecipeDetail(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := h.RecipeService.GetRecipeById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve recipe", http.StatusInternalServerError)
+		return
+	}
+
+	items, err := h.RecipeService.ListItemsByRecipeID(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve recipe items", http.StatusInternalServerError)
+		return
+	}
+
+	itemForm := model.FormData[model.AddRecipeItemRequest]{
+		Action: fmt.Sprintf("/recipes/%d/items", ID),
+		Data:   model.AddRecipeItemRequest{},
+		Errors: nil,
+	}
+
+	ingredients, err := h.IngredientService.GetAllIngredients(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to retrieve ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	subRecipeOptions, err := h.RecipeService.ListSubRecipeOptions(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve ingredients", http.StatusInternalServerError)
+		return
+	}
+
+	qty, qtyOK := view.ResolveExplosionQty(
+		r.URL.Query().Get("qty"),
+		strconv.FormatFloat(recipe.YieldQty, 'f', -1, 64),
+		recipe.YieldUnit,
+	)
+
+	reqs, err := h.RecipeService.ExplodeToIngredients(r.Context(), ID, qty)
+	if err != nil {
+		h.Log.WithError(err).Error("error explode recipe")
+		http.Error(w, "Failed to calculate ingredient requirements", http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]any{
+		"title":             "Recipe Detail",
+		"active":            "recipes",
+		"recipe":            recipe,
+		"items":             items,
+		"itemForm":          itemForm,
+		"ingredientOptions": ingredients,
+		"subRecipeOptions":  subRecipeOptions,
+		"explosion":         view.NewExplosion(qty, reqs),
+		"qtyInvalid":        !qtyOK,
+	}
+
+	h.Renderer.Render(w, "recipes/show.html", data)
 }

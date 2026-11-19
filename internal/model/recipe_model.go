@@ -39,3 +39,29 @@ type DeleteRecipeRequest struct {
 type SearchRecipeRequest struct {
 	Type string
 }
+
+type RecipeItemView struct {
+	ID       int64
+	Kind     string // "ingredient" | "recipe"
+	TargetID int64
+	Name     string
+	Quantity string
+	Unit     string
+}
+
+type AddRecipeItemRequest struct {
+	Item     string
+	Quantity string
+}
+
+type SubRecipeItemOption struct {
+	ID   int64
+	Name string
+	Unit string
+}
+
+type IngredientRequirement struct {
+	IngredientName string
+	Quantity       string
+	Unit           string
+}
