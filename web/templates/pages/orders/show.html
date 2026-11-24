@@ -1,0 +1,141 @@
+{{define "content"}}
+<div class="page-header">
+  <div>
+    <div class="header-title">
+      <h1>{{.order.CustomerName}}</h1>
+      {{if .order.Locked}}<span class="badge badge--muted">Terkunci</span>{{else}}<span class="badge">Dapat diubah</span>{{end}}
+    </div>
+    <p class="page-subtitle">Acara: {{.order.EventDate}} · Produksi: {{.order.ProductionDate}}</p>
+  </div>
+  <div class="actions">
+    {{if not .order.Locked}}<a href="/orders/{{.order.ID}}/edit" class="button button--secondary">Ubah</a>{{end}}
+    <a href="/orders" class="button button--secondary">Kembali</a>
+  </div>
+</div>
+
+{{if .order.Locked}}
+<div class="notice" role="note">
+  Pesanan ini terkunci karena tanggal acara kurang dari 2 hari lagi. Pesanan tidak dapat diubah atau dihapus.
+</div>
+{{end}}
+
+{{template "form-errors" .errors}}
+
+<div class="stack">
+  <!-- ============ Item pesanan ============ -->
+  <section>
+    <h2 class="section-title">Menu yang Dipesan</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Menu</th>
+            <th>Jumlah Porsi</th>
+            <th><span class="sr-only">Aksi</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .items}}
+          <tr>
+            <td><a href="/recipes/{{.MenuID}}"><strong>{{.MenuName}}</strong></a></td>
+            <td>
+              {{if $.order.Locked}}
+              {{.Portions}} porsi
+              {{else}}
+              <form method="post" action="/orders/{{$.order.ID}}/items/{{.MenuID}}" class="inline-form">
+                <input
+                  type="number"
+                  name="portions"
+                  inputmode="numeric"
+                  step="1"
+                  min="1"
+                  value="{{.Portions}}"
+                  aria-label="Jumlah porsi {{.MenuName}}"
+                  required
+                />
+                <span class="muted">porsi</span>
+                <button type="submit" class="button button--secondary button--sm">Simpan</button>
+              </form>
+              {{end}}
+            </td>
+            <td>
+              {{if not $.order.Locked}}
+              <div class="actions">
+                <form
+                  method="post"
+                  action="/orders/{{$.order.ID}}/items/{{.MenuID}}/delete"
+                  onsubmit="return confirm('Hapus menu ini dari pesanan?')"
+                >
+                  <button type="submit" class="button button--danger button--sm">Hapus</button>
+                </form>
+              </div>
+              {{end}}
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="3" class="empty">
+              Pesanan ini belum punya menu.{{if not .order.Locked}} Tambahkan menu di bawah.{{end}}
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+        {{if .items}}
+        <tfoot>
+          <tr>
+            <td>Total</td>
+            <td colspan="2">{{.order.TotalPortions}} porsi</td>
+          </tr>
+        </tfoot>
+        {{end}}
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ Tambah menu ============ -->
+  {{if not .order.Locked}}
+  <section>
+    <h2 class="section-title">Tambah Menu</h2>
+
+    {{template "form-errors" .itemForm.Errors}}
+
+    {{if .menuOptions}}
+    <form method="post" action="{{.itemForm.Action}}" class="form">
+      <div class="field">
+        <label for="menu_id">Menu</label>
+        <select id="menu_id" name="menu_id" required>
+          <option value="">Pilih menu…</option>
+          {{range .menuOptions}}
+          <option value="{{.ID}}" {{if eq $.itemForm.Data.MenuID (printf "%d" .ID)}}selected{{end}}>{{.Name}}</option>
+          {{end}}
+        </select>
+        <p class="field-hint">Setiap menu hanya dapat muncul sekali per pesanan. Ubah jumlah porsinya di tabel.</p>
+      </div>
+
+      <div class="field">
+        <label for="portions">Jumlah Porsi</label>
+        <input
+          id="portions"
+          name="portions"
+          type="number"
+          inputmode="numeric"
+          step="1"
+          min="1"
+          value="{{.itemForm.Data.Portions}}"
+          placeholder="Contoh: 100"
+          required
+        />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button">Tambah</button>
+      </div>
+    </form>
+    {{else}}
+    <p class="muted">Tidak ada menu yang bisa ditambahkan. Semua menu sudah ada di pesanan ini, atau belum ada resep bertipe Menu.</p>
+    {{end}}
+  </section>
+  {{end}}
+</div>
+{{end}}

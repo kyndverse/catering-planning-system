@@ -13,6 +13,7 @@ type RouteConfig struct {
 	PageHandler       *handler.PageHandler
 	IngredientHandler *handler.IngredientHandler
 	RecipeHandler     *handler.RecipeHandler
+	OrderHandler      *handler.OrderHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -46,5 +47,18 @@ func (c *RouteConfig) Setup() {
 		r.Post("/{id}/items", c.RecipeHandler.AddRecipeItem)
 		r.Post("/{id}/items/{itemID}", c.RecipeHandler.UpdateRecipeItem)
 		r.Post("/{id}/items/{itemID}/delete", c.RecipeHandler.DeleteRecipeItem)
+	})
+
+	c.App.Route("/orders", func(r chi.Router) {
+		r.Get("/", c.OrderHandler.Search)
+		r.Get("/new", c.OrderHandler.NewOrderPage)
+		r.Post("/", c.OrderHandler.CreateOrder)
+		r.Get("/{id}/edit", c.OrderHandler.EditOrderPage)
+		r.Post("/{id}/delete", c.OrderHandler.DeleteOrder)
+		r.Post("/{id}/items", c.OrderHandler.AddOrderItem)
+		r.Post("/{id}/items/{menuID}/delete", c.OrderHandler.DeleteOrderItem)
+		r.Post("/{id}/items/{menuID}", c.OrderHandler.UpdateOrderItem)
+		r.Get("/{id}", c.OrderHandler.GetOrderDetail)
+		r.Post("/{id}", c.OrderHandler.UpdateOrder)
 	})
 }

@@ -1,0 +1,68 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Pesanan</h1>
+  <a href="/orders/new" class="button">Tambah Pesanan</a>
+</div>
+
+<form method="get" action="/orders" class="filter-form">
+  <div class="field">
+    <label for="event_date">Tanggal Acara</label>
+    <input id="event_date" name="event_date" type="date" value="{{.filter.EventDate}}" />
+  </div>
+  <div class="field">
+    <label for="production_date">Tanggal Produksi</label>
+    <input id="production_date" name="production_date" type="date" value="{{.filter.ProductionDate}}" />
+  </div>
+  <div class="actions">
+    <button type="submit" class="button button--secondary">Terapkan</button>
+    <a href="/orders" class="button button--secondary">Reset</a>
+  </div>
+</form>
+
+<div class="alert-wide">{{template "form-errors" .errors}}</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Pelanggan</th>
+        <th>Tanggal Acara</th>
+        <th>Tanggal Produksi</th>
+        <th class="num">Jumlah Menu</th>
+        <th class="num">Total Porsi</th>
+        <th>Status</th>
+        <th><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .orders}}
+      <tr>
+        <td><a href="/orders/{{.ID}}"><strong>{{.CustomerName}}</strong></a></td>
+        <td>{{.EventDate}}</td>
+        <td>{{.ProductionDate}}</td>
+        <td class="num">{{.MenuCount}}</td>
+        <td class="num">{{.TotalPortions}}</td>
+        <td>
+          {{if .Locked}}<span class="badge badge--muted">Terkunci</span>{{else}}<span class="badge">Dapat diubah</span>{{end}}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="/orders/{{.ID}}" class="button button--secondary button--sm">Detail</a>
+            {{if not .Locked}}
+            <a href="/orders/{{.ID}}/edit" class="button button--secondary button--sm">Ubah</a>
+            <form method="post" action="/orders/{{.ID}}/delete" onsubmit="return confirm('Hapus pesanan ini?')">
+              <button type="submit" class="button button--danger button--sm">Hapus</button>
+            </form>
+            {{end}}
+          </div>
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="7" class="empty">Belum ada pesanan.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
