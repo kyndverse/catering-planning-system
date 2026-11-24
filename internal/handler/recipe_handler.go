@@ -2,10 +2,10 @@ package handler
 
 import (
 	"fmt"
-	"golang-web/internal/handler/view"
 	"golang-web/internal/model"
 	"golang-web/internal/service"
 	"golang-web/internal/validator"
+	"golang-web/internal/view"
 	"golang-web/web"
 	"net/http"
 	"strconv"
