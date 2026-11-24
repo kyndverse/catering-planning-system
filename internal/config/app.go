@@ -29,11 +29,13 @@ func Bootstrap(config *BootstrapConfig) {
 	ingredientPriceRepo := repository.NewIngredientPriceRepository(config.Logger)
 	recipeRepo := repository.NewRecipesRepository(config.Logger)
 	orderRepo := repository.NewOrderRepository()
+	productionRepo := repository.NewProductionRepository()
 
 	// setup service
 	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientRepo, ingredientPriceRepo)
 	recipeService := service.NewRecipesService(config.Logger, config.DB, config.Validator, recipeRepo)
 	orderService := service.NewOrdersService(config.Logger, config.DB, config.Validator, orderRepo)
+	productionService := service.NewProductionService(config.Logger, config.DB, productionRepo, orderRepo)
 
 	// setup handler
 	renderer := web.NewRenderer()
@@ -41,6 +43,7 @@ func Bootstrap(config *BootstrapConfig) {
 	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
 	recipeHandler := handler.NewRecipesHandler(config.Logger, renderer, config.Decoder, recipeService, ingredientService)
 	orderHandler := handler.NewOrderHandler(config.Logger, renderer, config.Decoder, orderService)
+	productionHandler := handler.NewProductionHandler(config.Logger, renderer, productionService)
 
 	// setup route
 	routeConfig := &router.RouteConfig{
@@ -49,6 +52,7 @@ func Bootstrap(config *BootstrapConfig) {
 		IngredientHandler: ingredientHandler,
 		RecipeHandler:     recipeHandler,
 		OrderHandler:      orderHandler,
+		ProductionHandler: productionHandler,
 	}
 
 	routeConfig.Setup()

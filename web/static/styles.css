@@ -656,6 +656,29 @@ tfoot td {
   background: hsl(var(--muted) / 0.3);
 }
 
+/* ---------- Badge "Kurang" ---------- */
+
+.badge--shortage {
+  border-color: hsl(var(--destructive) / 0.5);
+  background: hsl(var(--destructive) / 0.08);
+  color: hsl(var(--destructive));
+}
+
+/* ---------- Kotak centang untuk daftar belanja cetak ---------- */
+
+.check-box {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+  border: 1px solid hsl(var(--foreground) / 0.6);
+  border-radius: 3px;
+}
+
+.shopping-hint {
+  margin-top: 0.75rem;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 768px) {
@@ -694,5 +717,46 @@ tfoot td {
   .navbar {
     position: static;
     padding: 0 1rem;
+  }
+}
+
+/* ---------- Cetak: hanya isi halaman, latar putih ---------- */
+
+@media print {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 30%;
+    --border: 0 0% 70%;
+  }
+
+  .sidebar,
+  .navbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+
+  body {
+    font-size: 12px;
+  }
+
+  .stack {
+    gap: 1.25rem;
+  }
+
+  tr {
+    break-inside: avoid;
   }
 }

@@ -14,6 +14,7 @@ type RouteConfig struct {
 	IngredientHandler *handler.IngredientHandler
 	RecipeHandler     *handler.RecipeHandler
 	OrderHandler      *handler.OrderHandler
+	ProductionHandler *handler.ProductionHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -61,4 +62,7 @@ func (c *RouteConfig) Setup() {
 		r.Get("/{id}", c.OrderHandler.GetOrderDetail)
 		r.Post("/{id}", c.OrderHandler.UpdateOrder)
 	})
+
+	c.App.Get("/production", c.ProductionHandler.Index)
+	c.App.Get("/production/{date}", c.ProductionHandler.Show)
 }
