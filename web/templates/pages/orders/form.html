@@ -1,0 +1,55 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>{{.title}}</h1>
+</div>
+
+{{template "form-errors" .form.Errors}}
+
+<form method="post" action="{{.form.Action}}" class="form">
+  <div class="field">
+    <label for="customer_name">Nama Pelanggan</label>
+    <input
+      id="customer_name"
+      name="customer_name"
+      type="text"
+      value="{{.form.Data.CustomerName}}"
+      placeholder="Contoh: PT Maju Jaya"
+      autocomplete="off"
+      required
+    />
+  </div>
+
+  <div class="field">
+    <label for="event_date">Tanggal Acara</label>
+    <input
+      id="event_date"
+      name="event_date"
+      type="date"
+      value="{{.form.Data.EventDate}}"
+      min="{{.minEventDate}}"
+      required
+    />
+    <p class="field-hint">
+      Pesanan hanya dapat dibuat dan diubah sampai 2 hari sebelum tanggal acara.
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="production_date">Tanggal Produksi</label>
+    <input
+      id="production_date"
+      name="production_date"
+      type="date"
+      value="{{.form.Data.ProductionDate}}"
+    />
+    <p class="field-hint">
+      Kosongkan untuk memakai tanggal acara. Tidak boleh setelah tanggal acara.
+    </p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{.submitLabel}}</button>
+    <a href="{{.cancelURL}}" class="button button--secondary">Batal</a>
+  </div>
+</form>
+{{end}}

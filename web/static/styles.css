@@ -622,6 +622,40 @@ td.num {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Filter tanggal ---------- */
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-form .field {
+  width: 12rem;
+}
+
+/* ---------- Catatan (mis. pesanan terkunci) ---------- */
+
+.notice {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--muted) / 0.5);
+  color: hsl(var(--muted-foreground));
+}
+
+/* ---------- Footer tabel (total) ---------- */
+
+tfoot td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid hsl(var(--border));
+  font-weight: 600;
+  background: hsl(var(--muted) / 0.3);
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 768px) {

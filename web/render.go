@@ -39,8 +39,11 @@ func NewRenderer() *Renderer {
 	for _, page := range pages {
 		name := strings.TrimPrefix(page, "templates/pages/")
 		files := append(append([]string{}, baseFiles...), page)
-		
-		tmpl, err := template.New("layout").Funcs(funcs).ParseFS(templateFS, files...)
+		base, err := template.New("layout").Funcs(funcs).Parse(`{{define "form-errors"}}{{range .}}<div class="form-errors">{{.}}</div>{{end}}{{end}}`)
+		if err != nil {
+			panic(err)
+		}
+		tmpl, err := base.ParseFS(templateFS, files...)
 		if err != nil {
 			panic(fmt.Sprintf("parse template %q: %v", page, err))
 		}

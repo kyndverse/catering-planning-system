@@ -1,12 +1,12 @@
 package view
+
 import (
 	"fmt"
+	"golang-web/internal/timeutil"
 	"math/big"
 	"strings"
 	"time"
 )
-
-var wib = time.FixedZone("WIB", 7*60*60)
 
 // PriceRecord adalah satu baris tabel ingredient_prices apa adanya dari database.
 type PriceRecord struct {
@@ -41,7 +41,7 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 		return nil, nil, fmt.Errorf("invalid base_qty_per_purchase_unit: %q", baseQty)
 	}
 
-	today := now.In(wib).Format("2006-01-02")
+	today := timeutil.FormatDateISO(timeutil.Today(now))
 	rows = make([]PriceRow, 0, len(records))
 	currentIdx := -1
 
@@ -52,7 +52,7 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 		}
 
 		// Membandingkan "YYYY-MM-DD" sebagai string aman dan bebas masalah zona waktu.
-		eff := rec.EffectiveFrom.Format("2006-01-02")
+		eff := timeutil.FormatDateISO(rec.EffectiveFrom)
 
 		status := "past"
 		switch {
@@ -65,7 +65,7 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 
 		rows = append(rows, PriceRow{
 			ID:                   rec.ID,
-			EffectiveFrom:        formatDate(rec.EffectiveFrom),
+			EffectiveFrom:        timeutil.FormatDateID(rec.EffectiveFrom),
 			PricePerPurchaseUnit: formatRupiah(price, 0),
 			PricePerBaseUnit:     formatRupiah(new(big.Rat).Quo(price, base), 2),
 			Status:               status,
@@ -76,12 +76,6 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 		current = &rows[currentIdx] // diambil setelah slice final, jadi pointer aman
 	}
 	return rows, current, nil
-}
-
-var shortMonths = [...]string{"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"}
-
-func formatDate(d time.Time) string {
-	return fmt.Sprintf("%d %s %d", d.Day(), shortMonths[d.Month()-1], d.Year())
 }
 
 // formatRupiah: 72000 -> "Rp72.000"; 14.4 (2 desimal) -> "Rp14,40".
