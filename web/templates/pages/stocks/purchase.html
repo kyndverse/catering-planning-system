@@ -1,0 +1,127 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Catat Pembelian</h1>
+</div>
+
+{{template "form-errors" .form.Errors}}
+
+<form method="post" action="{{.form.Action}}" class="form">
+  <div class="field">
+    <label for="movement_date">Tanggal Pembelian</label>
+    <input
+      id="movement_date"
+      name="movement_date"
+      type="date"
+      value="{{.form.Data.MovementDate}}"
+      max="{{.today}}"
+      required
+    />
+  </div>
+
+  <div class="field">
+    <label for="ingredient_id">Bahan Baku</label>
+    <select id="ingredient_id" name="ingredient_id" required>
+      <option value="">Pilih bahan…</option>
+      {{range .ingredientOptions}}
+      <option
+        value="{{.ID}}"
+        data-base-qty="{{.BaseQtyPerPurchaseUnit}}"
+        data-base-unit="{{.BaseUnit}}"
+        data-purchase-unit="{{.PurchaseUnit}}"
+        {{if eq $.form.Data.IngredientID (printf "%d" .ID)}}selected{{end}}
+      >{{.Name}} ({{.PurchaseUnit}})</option>
+      {{end}}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="quantity">Jumlah Dibeli</label>
+    <input
+      id="quantity"
+      name="quantity"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      value="{{.form.Data.Quantity}}"
+      placeholder="Contoh: 2"
+      required
+    />
+    <p class="field-hint">
+      Dalam satuan beli (yang ada di tanda kurung). Sistem mengonversinya ke satuan dasar.
+    </p>
+    <p class="field-hint preview-line" id="purchase-preview" aria-live="polite"></p>
+  </div>
+
+  <div class="field">
+    <label for="total_cost">Total Harga Dibayar (Rp)</label>
+    <input
+      id="total_cost"
+      name="total_cost"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      value="{{.form.Data.TotalCost}}"
+      placeholder="Contoh: 140000"
+      required
+    />
+    <p class="field-hint">Total untuk seluruh jumlah di atas, bukan harga per satuan.</p>
+  </div>
+
+  <div class="field">
+    <label for="note">Catatan (opsional)</label>
+    <input id="note" name="note" type="text" maxlength="200" value="{{.form.Data.Note}}" placeholder="Contoh: Toko Makmur" autocomplete="off" />
+  </div>
+
+  <!-- OPSIONAL: hapus blok ini jika harga acuan tidak ingin diperbarui dari pembelian. -->
+  <div class="field">
+    <div class="check-row">
+      <input id="update_price" name="update_price" type="checkbox" value="1" {{if .form.Data.UpdatePrice}}checked{{end}} />
+      <label for="update_price">Perbarui harga acuan bahan ini</label>
+    </div>
+    <p class="field-hint">
+      Harga per satuan beli dari pembelian ini menjadi harga acuan baru, berlaku mulai tanggal pembelian.
+      Harga acuan dipakai untuk HPP dan perkiraan biaya belanja.
+    </p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{.submitLabel}}</button>
+    <a href="{{.cancelURL}}" class="button button--secondary">Batal</a>
+  </div>
+</form>
+
+<script>
+  // Hanya pratinjau tampilan. Konversi dan angka yang disimpan dihitung ulang oleh server.
+  (function () {
+    var sel = document.getElementById("ingredient_id");
+    var qty = document.getElementById("quantity");
+    var cost = document.getElementById("total_cost");
+    var out = document.getElementById("purchase-preview");
+    var nf = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
+
+    function update() {
+      var opt = sel.options[sel.selectedIndex];
+      var q = parseFloat(qty.value);
+      var base = opt ? parseFloat(opt.getAttribute("data-base-qty")) : NaN;
+      if (!opt || !opt.value || !(q > 0) || !(base > 0)) {
+        out.textContent = "";
+        return;
+      }
+      var text = "= " + nf.format(q * base) + " " + opt.getAttribute("data-base-unit");
+      var c = parseFloat(cost.value);
+      if (cost.value !== "" && c >= 0) {
+        text += " · Rp" + nf.format(c / q) + " per " + opt.getAttribute("data-purchase-unit");
+      }
+      out.textContent = text;
+    }
+
+    [sel, qty, cost].forEach(function (el) {
+      el.addEventListener("input", update);
+      el.addEventListener("change", update);
+    });
+    update();
+  })();
+</script>
+{{end}}

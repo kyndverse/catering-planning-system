@@ -1,0 +1,97 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Koreksi Stok</h1>
+</div>
+
+{{if .warning}}
+<div class="notice notice--warning" role="alert">{{.warning}}</div>
+{{end}}
+
+{{template "form-errors" .form.Errors}}
+
+<form method="post" action="{{.form.Action}}" class="form">
+  <input type="hidden" name="confirm_negative" value="{{.form.Data.ConfirmNegative}}" />
+
+  <div class="field">
+    <label for="movement_date">Tanggal Koreksi</label>
+    <input
+      id="movement_date"
+      name="movement_date"
+      type="date"
+      value="{{.form.Data.MovementDate}}"
+      max="{{.today}}"
+      required
+    />
+  </div>
+
+  <div class="field">
+    <label for="ingredient_id">Bahan Baku</label>
+    <select id="ingredient_id" name="ingredient_id" required>
+      <option value="">Pilih bahan…</option>
+      {{range .ingredientOptions}}
+      <option value="{{.ID}}" {{if eq $.form.Data.IngredientID (printf "%d" .ID)}}selected{{end}}>{{.Name}} ({{.BaseUnit}}) — stok {{.Stock}} {{.BaseUnit}}</option>
+      {{end}}
+    </select>
+  </div>
+
+  <div class="field">
+    <span class="field-label">Jenis Koreksi</span>
+    <div class="radio-group" role="radiogroup" aria-label="Jenis koreksi">
+      <label for="direction_increase">
+        <input
+          id="direction_increase"
+          name="direction"
+          type="radio"
+          value="increase"
+          {{if or (eq .form.Data.Direction "increase") (eq .form.Data.Direction "")}}checked{{end}}
+        />
+        Tambah stok
+      </label>
+      <label for="direction_decrease">
+        <input
+          id="direction_decrease"
+          name="direction"
+          type="radio"
+          value="decrease"
+          {{if eq .form.Data.Direction "decrease"}}checked{{end}}
+        />
+        Kurangi stok
+      </label>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="quantity">Jumlah</label>
+    <input
+      id="quantity"
+      name="quantity"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      value="{{.form.Data.Quantity}}"
+      placeholder="Contoh: 5000"
+      required
+    />
+    <p class="field-hint">Dalam satuan dasar bahan (yang ada di tanda kurung). Isi angka positif; arah ditentukan oleh jenis koreksi.</p>
+  </div>
+
+  <div class="field">
+    <label for="note">Alasan Koreksi</label>
+    <textarea
+      id="note"
+      name="note"
+      rows="3"
+      maxlength="500"
+      placeholder="Contoh: Stok awal, hasil hitung fisik, atau salah catat pemakaian"
+      required
+    >{{.form.Data.Note}}</textarea>
+    <p class="field-hint">Wajib diisi. Koreksi juga dipakai untuk memasukkan stok awal.</p>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{.submitLabel}}</button>
+    <a href="{{.cancelURL}}" class="button button--secondary">Batal</a>
+  </div>
+</form>
+{{end}}

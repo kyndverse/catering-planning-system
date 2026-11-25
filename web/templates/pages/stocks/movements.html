@@ -1,0 +1,96 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Riwayat Stok</h1>
+  <div class="actions">
+    <a href="/stock/purchases/new" class="button">Catat Pembelian</a>
+    <a href="/stock" class="button button--secondary">Kembali ke Stok</a>
+  </div>
+</div>
+
+<form method="get" action="/stock/movements" class="filter-form">
+  <div class="field">
+    <label for="ingredient_id">Bahan Baku</label>
+    <select id="ingredient_id" name="ingredient_id">
+      <option value="">Semua bahan</option>
+      {{range .ingredientOptions}}
+      <option value="{{.ID}}" {{if eq $.filter.IngredientID (printf "%d" .ID)}}selected{{end}}>{{.Name}}</option>
+      {{end}}
+    </select>
+  </div>
+  <div class="field">
+    <label for="type">Jenis</label>
+    <select id="type" name="type">
+      <option value="">Semua jenis</option>
+      <option value="PURCHASE" {{if eq .filter.Type "PURCHASE"}}selected{{end}}>Pembelian</option>
+      <option value="USAGE" {{if eq .filter.Type "USAGE"}}selected{{end}}>Pemakaian</option>
+      <option value="ADJUSTMENT" {{if eq .filter.Type "ADJUSTMENT"}}selected{{end}}>Koreksi</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="from">Dari Tanggal</label>
+    <input id="from" name="from" type="date" value="{{.filter.From}}" />
+  </div>
+  <div class="field">
+    <label for="to">Sampai Tanggal</label>
+    <input id="to" name="to" type="date" value="{{.filter.To}}" />
+  </div>
+  <div class="actions">
+    <button type="submit" class="button button--secondary">Terapkan</button>
+    <a href="/stock/movements" class="button button--secondary">Reset</a>
+  </div>
+</form>
+
+<div class="alert-wide">{{template "form-errors" .errors}}</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>Bahan Baku</th>
+        <th>Jenis</th>
+        <th class="num">Jumlah</th>
+        <th>Tanggal Produksi</th>
+        <th class="num">Total Biaya</th>
+        <th>Catatan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .movements}}
+      <tr>
+        <td>{{.Date}}</td>
+        <td>{{.IngredientName}}</td>
+        <td>
+          {{if eq .Type "PURCHASE"}}<span class="badge">Pembelian</span>
+          {{else if eq .Type "USAGE"}}<span class="badge badge--muted">Pemakaian</span>
+          {{else}}<span class="badge badge--current">Koreksi</span>{{end}}
+        </td>
+        <td class="num{{if .Negative}} qty-out{{end}}">
+          {{.Quantity}} {{.Unit}}
+          {{if .Equivalent}}<br /><span class="muted">{{.Equivalent}}</span>{{end}}
+        </td>
+        <td>{{if .ProductionDate}}{{.ProductionDate}}{{else}}<span class="muted">—</span>{{end}}</td>
+        <td class="num">{{if .TotalCost}}{{.TotalCost}}{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>{{if .Note}}{{.Note}}{{else}}<span class="muted">—</span>{{end}}</td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="7" class="empty">Belum ada riwayat stok{{if .hasFilter}} yang cocok dengan filter{{end}}.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+
+{{if gt .pagination.TotalPages 1}}
+<div class="pagination">
+  {{if .pagination.HasPrev}}<a href="{{.pagination.PrevURL}}" class="button button--secondary button--sm">&larr; Sebelumnya</a>{{end}}
+  <span class="muted">Halaman {{.pagination.Page}} dari {{.pagination.TotalPages}}</span>
+  {{if .pagination.HasNext}}<a href="{{.pagination.NextURL}}" class="button button--secondary button--sm">Berikutnya &rarr;</a>{{end}}
+</div>
+{{end}}
+
+<p class="field-hint history-hint">
+  Riwayat tidak dapat diubah atau dihapus. Kesalahan pencatatan dikoreksi dengan Koreksi Stok.
+</p>
+{{end}}

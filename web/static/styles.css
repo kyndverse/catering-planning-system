@@ -679,6 +679,85 @@ tfoot td {
   margin-top: 0.75rem;
 }
 
+/* ---------- Peringatan (bukan error) ---------- */
+
+.notice--warning {
+  border-color: hsl(var(--destructive) / 0.5);
+  background: hsl(var(--destructive) / 0.06);
+  color: hsl(var(--foreground));
+}
+
+/* ---------- Jumlah keluar / stok negatif ---------- */
+
+.qty-out {
+  color: hsl(var(--destructive));
+}
+
+/* ---------- Label untuk kelompok kontrol (bukan <label> tunggal) ---------- */
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* ---------- Radio dan checkbox di dalam .field ---------- */
+/* .field input memaksa width 100% dan tinggi 2.25rem; override untuk kontrol ini. */
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.radio-group label,
+.check-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field .radio-group input[type="radio"],
+.field .check-row input[type="checkbox"] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+  accent-color: hsl(var(--primary));
+}
+
+/* ---------- Pratinjau konversi pembelian ---------- */
+
+.preview-line {
+  min-height: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Paginasi riwayat ---------- */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.history-hint {
+  margin-top: 1rem;
+}
+
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 768px) {
