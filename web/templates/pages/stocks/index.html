@@ -1,0 +1,68 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Stok</h1>
+  <div class="actions">
+    <a href="/stock/purchases/new" class="button">Catat Pembelian</a>
+    <a href="/stock/usages/new" class="button button--secondary">Catat Pemakaian</a>
+    <a href="/stock/adjustments/new" class="button button--secondary">Koreksi Stok</a>
+    <a href="/stock/movements" class="button button--secondary">Riwayat</a>
+  </div>
+</div>
+
+{{if .negativeCount}}
+<div class="notice notice--warning" role="alert">
+  {{.negativeCount}} bahan bernilai stok negatif. Periksa pencatatan pemakaian, atau tambahkan koreksi stok.
+</div>
+{{end}}
+
+<form method="get" action="/stock" class="filter-form">
+  <div class="field">
+    <label for="q">Cari Bahan</label>
+    <input id="q" name="q" type="search" value="{{.filter.Q}}" placeholder="Nama bahan" autocomplete="off" />
+  </div>
+  <div class="actions">
+    <button type="submit" class="button button--secondary">Cari</button>
+    <a href="/stock" class="button button--secondary">Reset</a>
+  </div>
+</form>
+
+<div class="alert-wide">{{template "form-errors" .errors}}</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Bahan Baku</th>
+        <th class="num">Stok</th>
+        <th class="num">Setara Satuan Beli</th>
+        <th>Mutasi Terakhir</th>
+        <th><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .stocks}}
+      <tr>
+        <td><a href="/stock/movements?ingredient_id={{.IngredientID}}"><strong>{{.Name}}</strong></a></td>
+        <td class="num{{if .Negative}} qty-out{{end}}">
+          {{.Stock}} {{.Unit}}
+          {{if .Negative}}<span class="badge badge--shortage">Negatif</span>{{end}}
+        </td>
+        <td class="num">{{.PurchaseEquivalent}}</td>
+        <td>{{if .LastMovement}}{{.LastMovement}}{{else}}<span class="muted">—</span>{{end}}</td>
+        <td>
+          <div class="actions">
+            <a href="/stock/movements?ingredient_id={{.IngredientID}}" class="button button--secondary button--sm">Riwayat</a>
+          </div>
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="5" class="empty">
+          {{if .filter.Q}}Tidak ada bahan yang cocok dengan pencarian.{{else}}Belum ada bahan baku. Tambahkan di halaman Bahan Baku.{{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

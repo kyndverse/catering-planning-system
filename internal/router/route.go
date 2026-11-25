@@ -15,6 +15,7 @@ type RouteConfig struct {
 	RecipeHandler     *handler.RecipeHandler
 	OrderHandler      *handler.OrderHandler
 	ProductionHandler *handler.ProductionHandler
+	StockHandler      *handler.StockHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -65,4 +66,13 @@ func (c *RouteConfig) Setup() {
 
 	c.App.Get("/production", c.ProductionHandler.Index)
 	c.App.Get("/production/{date}", c.ProductionHandler.Show)
+
+	c.App.Get("/stock", c.StockHandler.Index)
+	c.App.Get("/stock/movements", c.StockHandler.Movements)
+	c.App.Get("/stock/purchases/new", c.StockHandler.NewPurchasePage)
+	c.App.Post("/stock/purchases", c.StockHandler.CreatePurchase)
+	c.App.Get("/stock/usages/new", c.StockHandler.NewUsagePage)
+	c.App.Post("/stock/usages", c.StockHandler.CreateUsage)
+	c.App.Get("/stock/adjustments/new", c.StockHandler.NewAdjustmentPage)
+	c.App.Post("/stock/adjustments", c.StockHandler.CreateAdjustment)
 }

@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Catat Pemakaian</h1>
+</div>
+
+{{if .warning}}
+<div class="notice notice--warning" role="alert">{{.warning}}</div>
+{{end}}
+
+{{template "form-errors" .form.Errors}}
+
+<form method="post" action="{{.form.Action}}" class="form">
+  <input type="hidden" name="confirm_negative" value="{{.form.Data.ConfirmNegative}}" />
+
+  <div class="field">
+    <label for="movement_date">Tanggal Pemakaian</label>
+    <input
+      id="movement_date"
+      name="movement_date"
+      type="date"
+      value="{{.form.Data.MovementDate}}"
+      max="{{.today}}"
+      required
+    />
+  </div>
+
+  <div class="field">
+    <label for="production_date">Tanggal Produksi</label>
+    <input
+      id="production_date"
+      name="production_date"
+      type="date"
+      value="{{.form.Data.ProductionDate}}"
+      required
+    />
+    <p class="field-hint">Tanggal produksi yang memakai bahan ini. Dipakai untuk laporan pemakaian per tanggal produksi.</p>
+  </div>
+
+  <div class="field">
+    <label for="ingredient_id">Bahan Baku</label>
+    <select id="ingredient_id" name="ingredient_id" required>
+      <option value="">Pilih bahan…</option>
+      {{range .ingredientOptions}}
+      <option value="{{.ID}}" {{if eq $.form.Data.IngredientID (printf "%d" .ID)}}selected{{end}}>{{.Name}} ({{.BaseUnit}}) — stok {{.Stock}} {{.BaseUnit}}</option>
+      {{end}}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="quantity">Jumlah Terpakai</label>
+    <input
+      id="quantity"
+      name="quantity"
+      type="number"
+      inputmode="decimal"
+      step="any"
+      min="0"
+      value="{{.form.Data.Quantity}}"
+      placeholder="Contoh: 3000"
+      required
+    />
+    <p class="field-hint">Dalam satuan dasar bahan (yang ada di tanda kurung).</p>
+  </div>
+
+  <div class="field">
+    <label for="note">Catatan (opsional)</label>
+    <input id="note" name="note" type="text" maxlength="200" value="{{.form.Data.Note}}" autocomplete="off" />
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">{{.submitLabel}}</button>
+    <a href="{{.cancelURL}}" class="button button--secondary">Batal</a>
+  </div>
+</form>
+{{end}}
