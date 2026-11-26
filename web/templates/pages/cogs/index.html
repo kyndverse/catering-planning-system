@@ -1,0 +1,5 @@
+{{define "content"}}
+<div class="page-header"><div><h1>HPP per Porsi</h1><p class="page-subtitle">Harga bahan berlaku per {{.asOf}}</p></div></div>
+{{template "form-errors" .errors}}
+<div class="table-wrap"><table><thead><tr><th>Menu</th><th class="num">HPP per Porsi</th><th>Status</th></tr></thead><tbody>{{range .menus}}<tr><td><a href="/cogs/{{.ID}}"><strong>{{.Name}}</strong></a></td><td class="num">{{if .Cogs}}{{.Cogs}}{{else}}<span class="muted">—</span>{{end}}</td><td>{{if eq .Status "complete"}}<span class="badge badge--current">Lengkap</span>{{else if eq .Status "incomplete"}}<span class="badge">Harga belum lengkap ({{.MissingCount}} bahan)</span>{{else}}<span class="badge badge--muted">Resep belum berisi bahan</span>{{end}}</td></tr>{{else}}<tr><td colspan="3" class="empty">Belum ada menu.</td></tr>{{end}}</tbody></table></div>
+{{end}}
