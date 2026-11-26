@@ -31,6 +31,8 @@ func Bootstrap(config *BootstrapConfig) {
 	orderRepo := repository.NewOrderRepository()
 	productionRepo := repository.NewProductionRepository()
 	stockRepo := repository.NewStockRepository()
+	cogsRepo := repository.NewCogsRepository()
+	usageReportRepo := repository.NewUsageReportRepository()
 
 	// setup service
 	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientRepo, ingredientPriceRepo)
@@ -38,6 +40,8 @@ func Bootstrap(config *BootstrapConfig) {
 	orderService := service.NewOrdersService(config.Logger, config.DB, config.Validator, orderRepo)
 	productionService := service.NewProductionService(config.Logger, config.DB, productionRepo, orderRepo)
 	stockService := service.NewStockService(config.DB, config.Validator, stockRepo)
+	cogsService := service.NewCogsService(config.Logger, config.DB, cogsRepo)
+	usageReportService := service.NewUsageReportService(config.Logger, config.DB, usageReportRepo, orderRepo)
 
 	// setup handler
 	renderer := web.NewRenderer()
@@ -47,16 +51,20 @@ func Bootstrap(config *BootstrapConfig) {
 	orderHandler := handler.NewOrderHandler(config.Logger, renderer, config.Decoder, orderService)
 	productionHandler := handler.NewProductionHandler(config.Logger, renderer, productionService)
 	stockHandler := handler.NewStockHandler(config.Logger, renderer, config.Decoder, stockService)
+	cogsHandler := handler.NewCogsHandler(config.Logger, renderer, cogsService)
+	usageReportHandler := handler.NewUsageReportHandler(config.Logger, renderer, usageReportService)
 
 	// setup route
 	routeConfig := &router.RouteConfig{
-		App:               config.App,
-		PageHandler:       pageHandler,
-		IngredientHandler: ingredientHandler,
-		RecipeHandler:     recipeHandler,
-		OrderHandler:      orderHandler,
-		ProductionHandler: productionHandler,
-		StockHandler:      stockHandler,
+		App:                config.App,
+		PageHandler:        pageHandler,
+		IngredientHandler:  ingredientHandler,
+		RecipeHandler:      recipeHandler,
+		OrderHandler:       orderHandler,
+		ProductionHandler:  productionHandler,
+		StockHandler:       stockHandler,
+		CogsHandler:        cogsHandler,
+		UsageReportHandler: usageReportHandler,
 	}
 
 	routeConfig.Setup()

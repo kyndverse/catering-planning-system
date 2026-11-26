@@ -1,0 +1,6 @@
+{{define "content"}}
+<div class="page-header"><div><h1>HPP {{.menu.Name}}</h1><p class="page-subtitle">Per 1 porsi · harga berlaku per {{.asOf}}</p></div><a href="/cogs" class="button button--secondary">Kembali</a></div>
+{{template "form-errors" .errors}}
+{{if eq .menu.Status "incomplete"}}<div class="notice">HPP belum lengkap karena {{.menu.MissingCount}} bahan belum memiliki harga.</div>{{end}}
+<div class="table-wrap"><table><thead><tr><th>Bahan Baku</th><th class="num">Kebutuhan</th><th class="num">Harga per Satuan Dasar</th><th class="num">Biaya</th><th class="num">Porsi Biaya</th></tr></thead><tbody>{{range .rows}}<tr><td>{{.IngredientName}}</td><td class="num">{{.Quantity}} {{.Unit}}</td>{{if .HasPrice}}<td class="num">{{.PricePerBaseUnit}}</td><td class="num">{{.Cost}}</td><td class="num">{{.Share}}</td>{{else}}<td colspan="3" class="num"><span class="muted">Belum ada harga</span></td>{{end}}</tr>{{else}}<tr><td colspan="5" class="empty">Resep belum berisi bahan.</td></tr>{{end}}</tbody>{{if .rows}}<tfoot><tr><td colspan="3">Total HPP per porsi</td><td class="num">{{if .menu.Cogs}}{{.menu.Cogs}}{{else}}—{{end}}</td><td></td></tr></tfoot>{{end}}</table></div>
+{{end}}

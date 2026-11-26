@@ -77,5 +77,5 @@ func FormatRupiahString(raw string) string {
 	if r.IsInt() {
 		decimals = 0
 	}
-	return formatRupiah(r, decimals)
+	return FormatRupiah(r, decimals, decimals)
 }

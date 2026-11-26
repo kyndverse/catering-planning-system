@@ -1,0 +1,5 @@
+{{define "content"}}
+<div class="page-header"><div><h1>Laporan Pemakaian</h1><p class="page-subtitle">Rencana dibanding realisasi pemakaian bahan.</p></div></div>
+<form method="get" action="/reports/usage" class="filter-form"><div class="field"><label for="date">Tanggal Produksi</label><input id="date" name="date" type="date" value="{{.date}}" required></div><div class="actions"><button class="button" type="submit">Lihat Laporan</button></div></form>{{template "form-errors" .errors}}
+<div class="table-wrap"><table><thead><tr><th>Tanggal Produksi</th><th class="num">Pesanan</th><th class="num">Total Porsi</th><th>Status</th></tr></thead><tbody>{{range .dates}}<tr><td><a href="/reports/usage/{{.Date}}"><strong>{{.Label}}</strong></a></td><td class="num">{{.OrderCount}}</td><td class="num">{{.TotalPortions}}</td><td>{{if .UsageRecorded}}<span class="badge badge--current">Sudah dicatat</span>{{else}}<span class="badge badge--muted">Belum dicatat</span>{{end}}</td></tr>{{else}}<tr><td colspan="4" class="empty">Belum ada tanggal produksi yang selesai.</td></tr>{{end}}</tbody></table></div>
+{{end}}
