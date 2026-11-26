@@ -48,6 +48,7 @@ func (h *RecipeHandler) Search(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]any{
 		"title":      "Recipes List",
+		"active":     "recipes",
 		"filterType": typeQuery,
 		"recipes":    recipes,
 	}
@@ -85,6 +86,7 @@ func (h *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
 
 		data := map[string]any{
 			"title":       "Create Recipe",
+			"active":      "recipes",
 			"isEdit":      false,
 			"submitLabel": "Create",
 			"cancelURL":   "/recipes",
@@ -138,6 +140,7 @@ func (h *RecipeHandler) EditRecipe(w http.ResponseWriter, r *http.Request) {
 
 		data := map[string]any{
 			"title":       "Update Recipe",
+			"active":      "recipes",
 			"isEdit":      true,
 			"submitLabel": "Update",
 			"cancelURL":   "/recipes",

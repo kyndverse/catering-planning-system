@@ -44,6 +44,7 @@ func (h *PageHandler) CreateIngredientForm(w http.ResponseWriter, r *http.Reques
 
 	data := map[string]any{
 		"title":          "Create Ingredient",
+		"active":         "ingredients",
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         false,
@@ -82,6 +83,7 @@ func (h *PageHandler) EditIngredientForm(w http.ResponseWriter, r *http.Request)
 
 	data := map[string]any{
 		"title":          "Update Ingredient",
+		"active":         "ingredients",
 		"baseUnits":      []string{"g", "ml", "pcs"},
 		"submitLabel":    "Simpan",
 		"isEdit":         true,
@@ -136,6 +138,7 @@ func (h *PageHandler) IngredientPricePage(w http.ResponseWriter, r *http.Request
 
 	data := map[string]any{
 		"title":          "Price History",
+		"active":         "recipes",
 		"currentPrice":   currentPrice,
 		"Ingredient":     ing,
 		"Prices":         rows,
@@ -156,6 +159,7 @@ func (h *PageHandler) CreateRecipeForm(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]any{
 		"title":       "Create Recipe",
+		"active":      "recipes",
 		"isEdit":      false,
 		"submitLabel": "Create",
 		"cancelURL":   "/recipes",
@@ -196,6 +200,7 @@ func (h *PageHandler) EditRecipeForm(w http.ResponseWriter, r *http.Request) {
 
 	data := map[string]any{
 		"title":       "Update Recipe",
+		"active":      "recipes",
 		"isEdit":      true,
 		"submitLabel": "Update",
 		"cancelURL":   "/recipes",

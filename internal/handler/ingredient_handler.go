@@ -41,6 +41,7 @@ func (h *IngredientHandler) GetAllIngredient(w http.ResponseWriter, r *http.Requ
 
 	data := map[string]any{
 		"title":       "Ingredients",
+		"active":      "ingredients",
 		"ingredients": ingredients,
 	}
 
@@ -77,6 +78,7 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 
 		data := map[string]any{
 			"title":          "Create Ingredient",
+			"active":         "ingredients",
 			"baseUnits":      []string{"g", "ml", "pcs"},
 			"submitLabel":    "Simpan",
 			"isEdit":         false,
@@ -128,6 +130,7 @@ func (h *IngredientHandler) EditIngredient(w http.ResponseWriter, r *http.Reques
 
 		data := map[string]any{
 			"title":          "Update Ingredient",
+			"active":         "ingredients",
 			"baseUnits":      []string{"g", "ml", "pcs"},
 			"submitLabel":    "Simpan",
 			"isEdit":         true,
@@ -237,6 +240,7 @@ func (h *IngredientHandler) AddIngredientPrice(w http.ResponseWriter, r *http.Re
 
 		data := map[string]any{
 			"title":          "Create Ingredient Price",
+			"active":         "ingredients",
 			"currentPrice":   currentPrice,
 			"Ingredient":     ing,
 			"Prices":         rows,
