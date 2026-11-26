@@ -66,8 +66,8 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 		rows = append(rows, PriceRow{
 			ID:                   rec.ID,
 			EffectiveFrom:        timeutil.FormatDateID(rec.EffectiveFrom),
-			PricePerPurchaseUnit: formatRupiah(price, 0),
-			PricePerBaseUnit:     formatRupiah(new(big.Rat).Quo(price, base), 2),
+			PricePerPurchaseUnit: FormatRupiah(price, 0, 0),
+			PricePerBaseUnit:     FormatRupiah(new(big.Rat).Quo(price, base), 2, 2),
 			Status:               status,
 		})
 	}
@@ -80,8 +80,26 @@ func BuildPriceRows(records []PriceRecord, baseQty string, now time.Time) (rows 
 
 // formatRupiah: 72000 -> "Rp72.000"; 14.4 (2 desimal) -> "Rp14,40".
 // Pembulatan hanya untuk tampilan; nilai asli tetap eksak di database.
-func formatRupiah(r *big.Rat, decimals int) string {
-	intPart, frac, _ := strings.Cut(r.FloatString(decimals), ".")
+func FormatRupiah(r *big.Rat, minDec, maxDec int) string {
+	if r == nil {
+		return ""
+	}
+	if minDec < 0 {
+		minDec = 0
+	}
+	if maxDec < minDec {
+		maxDec = minDec
+	}
+	rounded := r.FloatString(maxDec)
+	negative := strings.HasPrefix(rounded, "-")
+	rounded = strings.TrimPrefix(rounded, "-")
+	intPart, frac, _ := strings.Cut(rounded, ".")
+	if maxDec > minDec {
+		frac = strings.TrimRight(frac, "0")
+		if len(frac) < minDec {
+			frac += strings.Repeat("0", minDec-len(frac))
+		}
+	}
 
 	var b strings.Builder
 	for i, c := range intPart {
@@ -92,8 +110,11 @@ func formatRupiah(r *big.Rat, decimals int) string {
 	}
 
 	out := "Rp" + b.String()
-	if decimals > 0 {
+	if len(frac) > 0 {
 		out += "," + frac
+	}
+	if negative && (intPart != "0" || strings.Trim(frac, "0") != "") {
+		out = "-" + out
 	}
 	return out
 }

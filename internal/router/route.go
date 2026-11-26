@@ -9,13 +9,15 @@ import (
 )
 
 type RouteConfig struct {
-	App               chi.Router
-	PageHandler       *handler.PageHandler
-	IngredientHandler *handler.IngredientHandler
-	RecipeHandler     *handler.RecipeHandler
-	OrderHandler      *handler.OrderHandler
-	ProductionHandler *handler.ProductionHandler
-	StockHandler      *handler.StockHandler
+	App                chi.Router
+	PageHandler        *handler.PageHandler
+	IngredientHandler  *handler.IngredientHandler
+	RecipeHandler      *handler.RecipeHandler
+	OrderHandler       *handler.OrderHandler
+	ProductionHandler  *handler.ProductionHandler
+	StockHandler       *handler.StockHandler
+	CogsHandler        *handler.CogsHandler
+	UsageReportHandler *handler.UsageReportHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -66,6 +68,10 @@ func (c *RouteConfig) Setup() {
 
 	c.App.Get("/production", c.ProductionHandler.Index)
 	c.App.Get("/production/{date}", c.ProductionHandler.Show)
+	c.App.Get("/cogs", c.CogsHandler.Index)
+	c.App.Get("/cogs/{menuID}", c.CogsHandler.Show)
+	c.App.Get("/reports/usage", c.UsageReportHandler.Index)
+	c.App.Get("/reports/usage/{date}", c.UsageReportHandler.Show)
 
 	c.App.Get("/stock", c.StockHandler.Index)
 	c.App.Get("/stock/movements", c.StockHandler.Movements)
