@@ -18,9 +18,11 @@ func NewIngredientRepository(logger *logrus.Logger) *IngredientRepository {
 }
 
 func (p *IngredientRepository) FindAll(tx *sql.Tx) ([]entity.Ingredient, error) {
+	query := `SELECT id, name, base_unit, purchase_unit, base_qty_per_purchase_unit FROM ingredients`
+
 	var ingredients []entity.Ingredient
 
-	rows, err := tx.Query("SELECT id, name, base_unit, purchase_unit, base_qty_per_purchase_unit FROM ingredients")
+	rows, err := tx.Query(query)
 	if err != nil {
 		return nil, err
 	}

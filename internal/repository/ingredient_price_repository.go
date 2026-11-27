@@ -18,9 +18,10 @@ func NewIngredientPriceRepository(logger *logrus.Logger) *IngredientPriceReposit
 }
 
 func (p *IngredientPriceRepository) FindAllByIngedientID(tx *sql.Tx, id int64) ([]entity.IngredientPrice, error) {
-	var prices []entity.IngredientPrice
+	query := `SELECT id, ingredient_id, price_per_purchase_unit, effective_from FROM ingredient_prices WHERE ingredient_id=$1 ORDER BY effective_from DESC`
 
-	rows, err := tx.Query("SELECT id, ingredient_id, price_per_purchase_unit, effective_from FROM ingredient_prices WHERE ingredient_id=$1 ORDER BY effective_from DESC", id)
+	var prices []entity.IngredientPrice
+	rows, err := tx.Query(query, id)
 	if err != nil {
 		return nil, err
 	}

@@ -28,11 +28,11 @@ func Bootstrap(config *BootstrapConfig) {
 	ingredientRepo := repository.NewIngredientRepository(config.Logger)
 	ingredientPriceRepo := repository.NewIngredientPriceRepository(config.Logger)
 	recipeRepo := repository.NewRecipesRepository(config.Logger)
-	orderRepo := repository.NewOrderRepository()
-	productionRepo := repository.NewProductionRepository()
-	stockRepo := repository.NewStockRepository()
-	cogsRepo := repository.NewCogsRepository()
-	usageReportRepo := repository.NewUsageReportRepository()
+	orderRepo := repository.NewOrderRepository(config.Logger)
+	productionRepo := repository.NewProductionRepository(config.Logger)
+	stockRepo := repository.NewStockRepository(config.Logger)
+	cogsRepo := repository.NewCogsRepository(config.Logger)
+	usageReportRepo := repository.NewUsageReportRepository(config.Logger)
 
 	// setup service
 	ingredientService := service.NewIngredientService(config.Logger, config.DB, config.Validator, ingredientRepo, ingredientPriceRepo)

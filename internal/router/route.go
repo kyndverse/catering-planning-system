@@ -39,7 +39,7 @@ func (c *RouteConfig) Setup() {
 		r.Post("/{id}/prices", c.IngredientHandler.AddIngredientPrice)
 	})
 
-	// Ingredients
+	// Recipes
 	c.App.Route("/recipes", func(r chi.Router) {
 		r.Get("/", c.RecipeHandler.Search)
 		r.Post("/", c.RecipeHandler.CreateRecipe)
@@ -53,6 +53,7 @@ func (c *RouteConfig) Setup() {
 		r.Post("/{id}/items/{itemID}/delete", c.RecipeHandler.DeleteRecipeItem)
 	})
 
+	// Orders
 	c.App.Route("/orders", func(r chi.Router) {
 		r.Get("/", c.OrderHandler.Search)
 		r.Get("/new", c.OrderHandler.NewOrderPage)
@@ -66,6 +67,7 @@ func (c *RouteConfig) Setup() {
 		r.Post("/{id}", c.OrderHandler.UpdateOrder)
 	})
 
+	// Production and report
 	c.App.Get("/production", c.ProductionHandler.Index)
 	c.App.Get("/production/{date}", c.ProductionHandler.Show)
 	c.App.Get("/cogs", c.CogsHandler.Index)
@@ -73,6 +75,7 @@ func (c *RouteConfig) Setup() {
 	c.App.Get("/reports/usage", c.UsageReportHandler.Index)
 	c.App.Get("/reports/usage/{date}", c.UsageReportHandler.Show)
 
+	// Stock
 	c.App.Get("/stock", c.StockHandler.Index)
 	c.App.Get("/stock/movements", c.StockHandler.Movements)
 	c.App.Get("/stock/purchases/new", c.StockHandler.NewPurchasePage)

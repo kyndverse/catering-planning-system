@@ -5,20 +5,33 @@ import (
 	"time"
 
 	"golang-web/internal/model"
+
+	"github.com/sirupsen/logrus"
 )
 
-type ProductionRepository struct{}
+type ProductionRepository struct {
+	Log *logrus.Logger
+}
 
-func NewProductionRepository() *ProductionRepository { return &ProductionRepository{} }
+func NewProductionRepository(logger *logrus.Logger) *ProductionRepository {
+	return &ProductionRepository{
+		Log: logger,
+	}
+}
 
 func (r *ProductionRepository) ListUpcomingDates(tx *sql.Tx, today time.Time) ([]model.ProductionDateSummary, error) {
-	rows, err := tx.Query(`SELECT o.production_date, COUNT(DISTINCT o.id), COALESCE(SUM(oi.portions), 0), MAX(o.event_date)
-		FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id
-		WHERE o.production_date >= $1::date GROUP BY o.production_date ORDER BY o.production_date LIMIT 60`, today)
+	query := `
+				SELECT o.production_date, COUNT(DISTINCT o.id), COALESCE(SUM(oi.portions), 0), MAX(o.event_date)
+				FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id
+				WHERE o.production_date >= $1::date GROUP BY o.production_date ORDER BY o.production_date LIMIT 60
+	`
+
+	rows, err := tx.Query(query, today)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var out []model.ProductionDateSummary
 	for rows.Next() {
 		var row model.ProductionDateSummary
@@ -27,6 +40,7 @@ func (r *ProductionRepository) ListUpcomingDates(tx *sql.Tx, today time.Time) ([
 		}
 		out = append(out, row)
 	}
+
 	return out, rows.Err()
 }
 
@@ -36,6 +50,7 @@ func (r *ProductionRepository) ListMenuTotals(tx *sql.Tx, productionDate time.Ti
 		return nil, err
 	}
 	defer rows.Close()
+
 	var out []model.ProductionMenu
 	for rows.Next() {
 		var row model.ProductionMenu
@@ -44,26 +59,32 @@ func (r *ProductionRepository) ListMenuTotals(tx *sql.Tx, productionDate time.Ti
 		}
 		out = append(out, row)
 	}
+
 	return out, rows.Err()
 }
 
 func (r *ProductionRepository) ListRequirements(tx *sql.Tx, productionDate, today time.Time) ([]model.ProductionRequirementRow, error) {
-	rows, err := tx.Query(`WITH RECURSIVE menu_totals AS (
- SELECT oi.menu_id AS recipe_id, SUM(oi.portions)::numeric AS qty FROM orders o JOIN order_items oi ON oi.order_id=o.id WHERE o.production_date=$1::date GROUP BY oi.menu_id
-), exploded AS (
- SELECT recipe_id, qty, 0 AS depth FROM menu_totals
- UNION ALL
- SELECT ri.sub_recipe_id, e.qty * ri.quantity / r.yield_qty, e.depth + 1 FROM exploded e JOIN recipes r ON r.id=e.recipe_id JOIN recipe_items ri ON ri.recipe_id=r.id AND ri.sub_recipe_id IS NOT NULL WHERE e.depth < 20
-), requirements AS (
- SELECT ri.ingredient_id, ROUND(SUM(e.qty * ri.quantity / r.yield_qty), 4) AS required_qty FROM exploded e JOIN recipes r ON r.id=e.recipe_id JOIN recipe_items ri ON ri.recipe_id=r.id AND ri.ingredient_id IS NOT NULL GROUP BY ri.ingredient_id
-), stock AS (SELECT ingredient_id,SUM(quantity) AS stock_qty FROM stock_movements GROUP BY ingredient_id), latest_price AS (
- SELECT DISTINCT ON (ip.ingredient_id) ip.ingredient_id,ip.price_per_purchase_unit FROM ingredient_prices ip WHERE ip.effective_from <= $2::date ORDER BY ip.ingredient_id,ip.effective_from DESC
-)
-SELECT i.id,i.name,i.base_unit,i.purchase_unit,i.base_qty_per_purchase_unit::text,q.required_qty::text,COALESCE(s.stock_qty,0)::text,p.price_per_purchase_unit::text FROM requirements q JOIN ingredients i ON i.id=q.ingredient_id LEFT JOIN stock s ON s.ingredient_id=q.ingredient_id LEFT JOIN latest_price p ON p.ingredient_id=q.ingredient_id ORDER BY i.name`, productionDate, today)
+	query := `
+				WITH RECURSIVE menu_totals AS (
+				SELECT oi.menu_id AS recipe_id, SUM(oi.portions)::numeric AS qty FROM orders o JOIN order_items oi ON oi.order_id=o.id WHERE o.production_date=$1::date GROUP BY oi.menu_id
+				), exploded AS (
+				SELECT recipe_id, qty, 0 AS depth FROM menu_totals
+				UNION ALL
+				SELECT ri.sub_recipe_id, e.qty * ri.quantity / r.yield_qty, e.depth + 1 FROM exploded e JOIN recipes r ON r.id=e.recipe_id JOIN recipe_items ri ON ri.recipe_id=r.id AND ri.sub_recipe_id IS NOT NULL WHERE e.depth < 20
+				), requirements AS (
+				SELECT ri.ingredient_id, ROUND(SUM(e.qty * ri.quantity / r.yield_qty), 4) AS required_qty FROM exploded e JOIN recipes r ON r.id=e.recipe_id JOIN recipe_items ri ON ri.recipe_id=r.id AND ri.ingredient_id IS NOT NULL GROUP BY ri.ingredient_id
+				), stock AS (SELECT ingredient_id,SUM(quantity) AS stock_qty FROM stock_movements GROUP BY ingredient_id), latest_price AS (
+				SELECT DISTINCT ON (ip.ingredient_id) ip.ingredient_id,ip.price_per_purchase_unit FROM ingredient_prices ip WHERE ip.effective_from <= $2::date ORDER BY ip.ingredient_id,ip.effective_from DESC
+				)
+				SELECT i.id,i.name,i.base_unit,i.purchase_unit,i.base_qty_per_purchase_unit::text,q.required_qty::text,COALESCE(s.stock_qty,0)::text,p.price_per_purchase_unit::text FROM requirements q JOIN ingredients i ON i.id=q.ingredient_id LEFT JOIN stock s ON s.ingredient_id=q.ingredient_id LEFT JOIN latest_price p ON p.ingredient_id=q.ingredient_id ORDER BY i.name
+	`
+
+	rows, err := tx.Query(query, productionDate, today)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	var out []model.ProductionRequirementRow
 	for rows.Next() {
 		var row model.ProductionRequirementRow
@@ -77,5 +98,6 @@ SELECT i.id,i.name,i.base_unit,i.purchase_unit,i.base_qty_per_purchase_unit::tex
 		}
 		out = append(out, row)
 	}
+
 	return out, rows.Err()
 }
