@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"golang-web/internal/domain/entity"
+	"golang-web/internal/entity"
 
 	"github.com/sirupsen/logrus"
 )

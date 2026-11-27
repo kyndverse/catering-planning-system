@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"golang-web/internal/domain/entity"
+
+	"golang-web/internal/entity"
 	"golang-web/internal/model"
 	"golang-web/internal/repository"
 	"golang-web/internal/validator"
