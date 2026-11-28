@@ -757,6 +757,70 @@ tfoot td {
   margin-top: 1rem;
 }
 
+/* ---------- Halaman auth (login) ---------- */
+
+.auth-content {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: hsl(var(--muted) / 0.4);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 24rem;
+  padding: 2rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.auth-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.auth-header h1 {
+  font-size: 1.5rem;
+}
+
+.auth-card .form-errors {
+  max-width: none;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.auth-actions .button {
+  width: 100%;
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: hsl(var(--destructive));
+}
+
+.field input[aria-invalid="true"] {
+  border-color: hsl(var(--destructive));
+}
+
+.field input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.2);
+}
 
 /* ---------- Responsive ---------- */
 

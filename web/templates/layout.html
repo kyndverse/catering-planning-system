@@ -8,13 +8,19 @@
     <link rel="stylesheet" href="/web/static/styles.css" />
   </head>
   <body>
-    <div class="layout">
-      {{template "sidebar" .}}
-      <div class="main">
-        {{template "navbar" .}}
-        <main class="content">{{template "content" .}}</main>
+    {{if .IsAuthPage}}
+      <main class="auth-content">
+        {{template "content" .}}
+      </main>
+    {{else}}
+      <div class="layout">
+        {{template "sidebar" .}}
+        <div class="main">
+          {{template "navbar" .}}
+          <main class="content">{{template "content" .}}</main>
+        </div>
       </div>
-    </div>
+    {{end}}
   </body>
 </html>
 {{end}}
