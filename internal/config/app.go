@@ -48,10 +48,11 @@ func Bootstrap(config *BootstrapConfig) {
 	stockService := service.NewStockService(config.DB, config.Validator, stockRepo)
 	cogsService := service.NewCogsService(config.Logger, config.DB, cogsRepo)
 	usageReportService := service.NewUsageReportService(config.Logger, config.DB, usageReportRepo, orderRepo)
+	userService := service.NewUserService(config.Logger, config.DB, config.Validator, userRepo)
 
 	// setup handler
 	renderer := web.NewRenderer()
-	pageHandler := handler.NewPageHandler(renderer, ingredientService, recipeService)
+	pageHandler := handler.NewPageHandler(renderer)
 	authHandler := handler.NewAuthHandler(config.Logger, renderer, config.Decoder, authService)
 	ingredientHandler := handler.NewIngredientHandler(config.Logger, renderer, config.Decoder, ingredientService)
 	recipeHandler := handler.NewRecipesHandler(config.Logger, renderer, config.Decoder, recipeService, ingredientService)
@@ -60,6 +61,7 @@ func Bootstrap(config *BootstrapConfig) {
 	stockHandler := handler.NewStockHandler(config.Logger, renderer, config.Decoder, stockService)
 	cogsHandler := handler.NewCogsHandler(config.Logger, renderer, cogsService)
 	usageReportHandler := handler.NewUsageReportHandler(config.Logger, renderer, usageReportService)
+	userHandler := handler.NewUserHandler(config.Logger, renderer, config.Decoder, userService)
 
 	// setup middleware
 	authMiddleware := middleware.NewAuthMiddleware(config.Logger, sessionRepo, renderer)
@@ -76,6 +78,7 @@ func Bootstrap(config *BootstrapConfig) {
 		StockHandler:       stockHandler,
 		CogsHandler:        cogsHandler,
 		UsageReportHandler: usageReportHandler,
+		UserHandler:        userHandler,
 		AuthMiddleware:     authMiddleware,
 	}
 
