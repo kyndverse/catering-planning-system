@@ -16,10 +16,7 @@ func NewPageHandler(renderer *web.Renderer) *PageHandler {
 	}
 }
 
+// dashboard soon
 func (h *PageHandler) HomePage(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"title": "Home",
-	}
-
-	h.Renderer.Render(w, "home/index.html", data)
+	http.Redirect(w, r, "/ingredients", http.StatusSeeOther)
 }

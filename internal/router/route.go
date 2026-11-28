@@ -28,6 +28,8 @@ type RouteConfig struct {
 func (c *RouteConfig) Setup() {
 	fs := http.FileServer(http.Dir("web/static"))
 	c.App.Handle("/web/static/*", http.StripPrefix("/web/static/", fs))
+	
+	c.App.NotFound(c.PageHandler.HomePage)
 
 	c.SetupAuthRoutes()
 	c.SetupGuestRoutes()
