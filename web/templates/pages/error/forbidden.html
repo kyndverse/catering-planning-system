@@ -1,0 +1,18 @@
+{{define "content"}}
+<div class="error-state">
+  <div class="error-icon" aria-hidden="true">
+    <svg class="icon" viewBox="0 0 24 24">
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  </div>
+
+  <span class="badge badge--muted">Error 403</span>
+  <h1>Akses ditolak</h1>
+  <p class="page-subtitle">Kamu tidak punya izin untuk membuka halaman ini.</p>
+
+  <div class="error-actions no-print">
+    <a href="/ingredients" class="button button--secondary">Ke beranda</a>
+  </div>
+</div>
+{{end}}

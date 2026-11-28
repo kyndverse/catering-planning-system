@@ -18,8 +18,10 @@ func main() {
 	chiRouter := chi.NewRouter()
 	decoder := form.NewDecoder()
 	validator := validator.NewValidator()
+	redisClient := config.NewRedisClient(envConfig, logger)
 
 	defer db.Close()
+	defer redisClient.Close()
 
 	app := &http.Server{
 		Addr:    envConfig.ADDR,
@@ -27,11 +29,12 @@ func main() {
 	}
 
 	config.Bootstrap(&config.BootstrapConfig{
-		Logger:    logger,
-		App:       chiRouter,
-		DB:        db,
-		Decoder:   decoder,
-		Validator: validator,
+		Logger:      logger,
+		App:         chiRouter,
+		DB:          db,
+		RedisClient: redisClient,
+		Decoder:     decoder,
+		Validator:   validator,
 	})
 
 	fmt.Println("Server running in http://localhost:3000")

@@ -3,7 +3,8 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"golang-web/internal/domain/entity"
+
+	"golang-web/internal/entity"
 	"golang-web/internal/model"
 
 	"github.com/sirupsen/logrus"

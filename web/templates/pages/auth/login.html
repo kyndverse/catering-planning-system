@@ -1,0 +1,61 @@
+{{define "content"}} {{with .LoginForm}}
+<div class="auth-card">
+  <div class="auth-header">
+    <h1>{{.Judul}}</h1>
+    <p class="page-subtitle">Masuk untuk melanjutkan.</p>
+  </div>
+
+  {{with index .Errors "Error"}}
+  <div class="form-errors" role="alert">{{.}}</div>
+  {{end}}
+
+  <form method="post" action="{{.Action}}" class="auth-form" novalidate>
+    <div class="field">
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        value="{{.Data.Email}}"
+        placeholder="nama@email.com"
+        autocomplete="username"
+        autofocus
+        required
+        {{with index .Errors "Email"}}aria-invalid="true" aria-describedby="email-error"{{end}}
+      />
+      {{with index .Errors "Email"}}
+      <p id="email-error" class="field-error">{{.}}</p>
+      {{end}}
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        {{with index .Errors "Password"}}aria-invalid="true" aria-describedby="password-error"{{end}}
+      />
+      {{with index .Errors "Password"}}
+      <p id="password-error" class="field-error">{{.}}</p>
+      {{end}}
+      <div class="check-row">
+        <input type="checkbox" id="show-password" />
+        <label for="show-password">Tampilkan password</label>
+      </div>
+    </div>
+
+    <div class="auth-actions">
+      <button type="submit" class="button">Login</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.getElementById("show-password").addEventListener("change", function (e) {
+    document.getElementById("password").type = e.target.checked ? "text" : "password";
+  });
+</script>
+{{end}}{{end}}
