@@ -29,6 +29,7 @@ func NewRenderer() *Renderer {
 		"templates/layout.html",
 		"templates/sidebar.html",
 		"templates/navbar.html",
+		"templates/partials/form-errors.html",
 	}
 
 	pages, err := fs.Glob(templateFS, "templates/pages/*/*.html")
@@ -39,11 +40,7 @@ func NewRenderer() *Renderer {
 	for _, page := range pages {
 		name := strings.TrimPrefix(page, "templates/pages/")
 		files := append(append([]string{}, baseFiles...), page)
-		base, err := template.New("layout").Funcs(funcs).Parse(`{{define "form-errors"}}{{range .}}<div class="form-errors">{{.}}</div>{{end}}{{end}}`)
-		if err != nil {
-			panic(err)
-		}
-		tmpl, err := base.ParseFS(templateFS, files...)
+		tmpl, err := template.New("layout").Funcs(funcs).ParseFS(templateFS, files...)
 		if err != nil {
 			panic(fmt.Sprintf("parse template %q: %v", page, err))
 		}
