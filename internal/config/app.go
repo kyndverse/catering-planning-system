@@ -62,7 +62,7 @@ func Bootstrap(config *BootstrapConfig) {
 	usageReportHandler := handler.NewUsageReportHandler(config.Logger, renderer, usageReportService)
 
 	// setup middleware
-	authMiddleware := middleware.NewAuthMiddleware(config.Logger, sessionRepo)
+	authMiddleware := middleware.NewAuthMiddleware(config.Logger, sessionRepo, renderer)
 
 	// setup route
 	routeConfig := &router.RouteConfig{

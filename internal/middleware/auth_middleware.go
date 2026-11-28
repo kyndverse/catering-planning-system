@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang-web/internal/auth"
 	"golang-web/internal/repository"
+	"golang-web/web"
 	"net/http"
 
 	"github.com/redis/go-redis/v9"
@@ -13,12 +14,14 @@ import (
 type AuthMiddleware struct {
 	Log               *logrus.Logger
 	SessionRepository *repository.SessionRepository
+	Renderer          *web.Renderer
 }
 
-func NewAuthMiddleware(logger *logrus.Logger, sessionRepository *repository.SessionRepository) *AuthMiddleware {
+func NewAuthMiddleware(logger *logrus.Logger, sessionRepository *repository.SessionRepository, renderer *web.Renderer) *AuthMiddleware {
 	return &AuthMiddleware{
 		Log:               logger,
 		SessionRepository: sessionRepository,
+		Renderer:          renderer,
 	}
 }
 
@@ -49,28 +52,36 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	})
 }
 
-
 func (m *AuthMiddleware) Authorize(allowedRoles ...string) func(http.Handler) http.Handler {
-    roles := make(map[string]struct{}, len(allowedRoles))
-    for _, role := range allowedRoles {
-        roles[role] = struct{}{}
-    }
+	roles := make(map[string]struct{}, len(allowedRoles))
+	for _, role := range allowedRoles {
+		roles[role] = struct{}{}
+	}
 
-    return func(next http.Handler) http.Handler {
-        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            role, ok := auth.RoleFromContext(r.Context())
-            if !ok {
-                http.Error(w, "Forbidden", http.StatusForbidden)
-                return
-            }
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			role, ok := auth.RoleFromContext(r.Context())
+			if !ok {
+				m.forbidden(w)
+				return
+			}
 
-            if _, allowed := roles[role]; !allowed {
-                http.Error(w, "Forbidden", http.StatusForbidden)
-                return
-            }
+			if _, allowed := roles[role]; !allowed {
+				m.forbidden(w)
+				return
+			}
 
-            next.ServeHTTP(w, r)
-        })
-    }
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
+func (m *AuthMiddleware) forbidden(w http.ResponseWriter) {
+	data := map[string]any{
+		"title":  "Akses Ditolak",
+		"active": "",
+	}
+
+	w.WriteHeader(http.StatusForbidden)
+	m.Renderer.Render(w, "error/forbidden.html", data)
+}
