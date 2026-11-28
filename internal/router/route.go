@@ -43,21 +43,17 @@ func (c *RouteConfig) SetupGuestRoutes() {
 func (c *RouteConfig) SetupAuthRoutes() {
 	c.App.Group(func(r chi.Router) {
 		r.Use(c.AuthMiddleware.Authenticate)
-
+		
 		// Ingredient
-		r.Group(func(r chi.Router) {
-			r.Use(c.AuthMiddleware.Authorize(auth.RoleWarehouse))
-
-			r.Route("/ingredients", func(r chi.Router) {
-				r.Get("/", c.IngredientHandler.GetAllIngredient)
-				r.Post("/", c.IngredientHandler.CreateIngredient)
-				r.Get("/create", c.PageHandler.CreateIngredientForm)
-				r.Get("/{id}/edit", c.PageHandler.EditIngredientForm)
-				r.Post("/{id}/edit", c.IngredientHandler.EditIngredient)
-				r.Post("/{id}/delete", c.IngredientHandler.DeleteIngredient)
-				r.Get("/{id}/prices", c.PageHandler.IngredientPricePage)
-				r.Post("/{id}/prices", c.IngredientHandler.AddIngredientPrice)
-			})
+		r.Route("/ingredients", func(r chi.Router) {
+			r.Get("/", c.IngredientHandler.GetAllIngredient)
+			r.Post("/", c.IngredientHandler.CreateIngredient)
+			r.Get("/create", c.PageHandler.CreateIngredientForm)
+			r.Get("/{id}/edit", c.PageHandler.EditIngredientForm)
+			r.Post("/{id}/edit", c.IngredientHandler.EditIngredient)
+			r.Post("/{id}/delete", c.IngredientHandler.DeleteIngredient)
+			r.Get("/{id}/prices", c.PageHandler.IngredientPricePage)
+			r.Post("/{id}/prices", c.IngredientHandler.AddIngredientPrice)
 		})
 
 		// Recipe
@@ -82,7 +78,7 @@ func (c *RouteConfig) SetupAuthRoutes() {
 			r.Get("/{id}/edit", c.OrderHandler.EditOrderPage)
 			r.Post("/{id}/delete", c.OrderHandler.DeleteOrder)
 			r.Post("/{id}/items", c.OrderHandler.AddOrderItem)
-			r.Post("/{id}/items/{menuID}/delete", c.OrderHandler.DeleteOrderItem)
+			r.With(c.AuthMiddleware.Authorize(auth.RoleOwner)).Post("/{id}/items/{menuID}/delete", c.OrderHandler.DeleteOrderItem)
 			r.Post("/{id}/items/{menuID}", c.OrderHandler.UpdateOrderItem)
 			r.Get("/{id}", c.OrderHandler.GetOrderDetail)
 			r.Post("/{id}", c.OrderHandler.UpdateOrder)
@@ -91,10 +87,14 @@ func (c *RouteConfig) SetupAuthRoutes() {
 		// HPP production and report
 		r.Get("/production", c.ProductionHandler.Index)
 		r.Get("/production/{date}", c.ProductionHandler.Show)
-		r.Get("/cogs", c.CogsHandler.Index)
-		r.Get("/cogs/{menuID}", c.CogsHandler.Show)
-		r.Get("/reports/usage", c.UsageReportHandler.Index)
-		r.Get("/reports/usage/{date}", c.UsageReportHandler.Show)
+		r.Group(func(r chi.Router) {
+			r.Use(c.AuthMiddleware.Authorize(auth.RoleOwner))
+
+			r.Get("/cogs", c.CogsHandler.Index)
+			r.Get("/cogs/{menuID}", c.CogsHandler.Show)
+			r.Get("/reports/usage", c.UsageReportHandler.Index)
+			r.Get("/reports/usage/{date}", c.UsageReportHandler.Show)
+		})
 
 		// Stock
 		r.Route("/stock", func(r chi.Router) {

@@ -35,8 +35,9 @@ func (h *AuthHandler) LoginForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]any{
-		"title":     "Login",
-		"LoginForm": loginForm,
+		"title":      "Login",
+		"IsAuthPage": true,
+		"LoginForm":  loginForm,
 	}
 
 	h.Renderer.Render(w, "auth/login.html", data)
@@ -77,7 +78,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data := map[string]any{
-			"title":     "Login",
+			"title":      "Login",
+			"IsAuthPage": true,
 			"LoginForm": loginForm,
 		}
 

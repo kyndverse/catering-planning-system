@@ -1,8 +1,6 @@
 package auth
 
 const (
-	RoleAdmin      string = "ADMIN"
-	RoleManager    string = "MANAGER"
-	RoleWarehouse  string = "WAREHOSE"
-	RoleProduction string = "PRODUCTION"
+	RoleOwner string = "OWNER"
+	RoleStaff string = "STAFF"
 )

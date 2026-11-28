@@ -26,14 +26,14 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionCookie, err := r.Cookie("session_id")
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 			return
 		}
 
 		session, err := m.SessionRepository.FindByID(r.Context(), sessionCookie.Value)
 		if err != nil {
 			if errors.Is(err, redis.Nil) {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				http.Redirect(w, r, "/auth/login", http.StatusSeeOther)
 				return
 			}
 
