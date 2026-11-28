@@ -28,7 +28,6 @@ func NewRenderer() *Renderer {
 	baseFiles := []string{
 		"templates/layout.html",
 		"templates/sidebar.html",
-		"templates/navbar.html",
 		"templates/partials/form-errors.html",
 	}
 

@@ -1,29 +1,68 @@
 {{define "sidebar"}}
 <aside class="sidebar">
-  <nav aria-label="Menu utama">
+   <a href="/" class="sidebar-brand" aria-label="Katering Dapur Ibu, ke beranda">
+    <span class="sidebar-logo" aria-hidden="true">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg>
+    </span>
+    <span class="sidebar-brand-text">
+      <strong>Dapur Ibu</strong>
+    </span>
+  </a>
+
+  <nav aria-label="Menu utama" class="sidebar-nav">
     <ul>
       <li>
-        <a href="/ingredients" {{if eq .active "ingredients"}}class="active" aria-current="page"{{end}}>Bahan Baku</a>
+        <a href="/ingredients" {{if eq .active "ingredients"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          <span>Bahan Baku</span>
+        </a>
       </li>
       <li>
-        <a href="/recipes" {{if eq .active "recipes"}}class="active" aria-current="page"{{end}}>Resep</a>
+        <a href="/recipes" {{if eq .active "recipes"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>Resep</span>
+        </a>
       </li>
       <li>
-        <a href="/orders" {{if eq .active "orders"}}class="active" aria-current="page"{{end}}>Pesanan</a>
+        <a href="/orders" {{if eq .active "orders"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+          <span>Pesanan</span>
+        </a>
       </li>
       <li>
-        <a href="/production" {{if eq .active "production"}}class="active" aria-current="page"{{end}}>Produksi &amp; Belanja</a>
+        <a href="/production" {{if eq .active "production"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          <span>Produksi &amp; Belanja</span>
+        </a>
       </li>
       <li>
-        <a href="/stock" {{if eq .active "stock"}}class="active" aria-current="page"{{end}}>Stok</a>
+        <a href="/stock" {{if eq .active "stock"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+          <span>Stok</span>
+        </a>
       </li>
       <li>
-        <a href="/cogs" {{if eq .active "cogs"}}class="active" aria-current="page"{{end}}>HPP</a>
+        <a href="/cogs" {{if eq .active "cogs"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>HPP</span>
+        </a>
       </li>
       <li>
-        <a href="/reports/usage" {{if eq .active "reports"}}class="active" aria-current="page"{{end}}>Laporan Pemakaian</a>
+        <a href="/reports/usage" {{if eq .active "reports"}}class="active" aria-current="page"{{end}}>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+          <span>Laporan Pemakaian</span>
+        </a>
       </li>
     </ul>
   </nav>
+
+  <div class="sidebar-footer">
+    <form method="post" action="/auth/logout">
+      <button type="submit" class="button button--ghost button--block">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        Logout
+      </button>
+    </form>
+  </div>
 </aside>
 {{end}}
