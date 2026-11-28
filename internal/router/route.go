@@ -21,6 +21,7 @@ type RouteConfig struct {
 	StockHandler       *handler.StockHandler
 	CogsHandler        *handler.CogsHandler
 	UsageReportHandler *handler.UsageReportHandler
+	UserHandler        *handler.UserHandler
 	AuthMiddleware     *middleware.AuthMiddleware
 }
 
@@ -48,11 +49,11 @@ func (c *RouteConfig) SetupAuthRoutes() {
 		r.Route("/ingredients", func(r chi.Router) {
 			r.Get("/", c.IngredientHandler.GetAllIngredient)
 			r.Post("/", c.IngredientHandler.CreateIngredient)
-			r.Get("/create", c.PageHandler.CreateIngredientForm)
-			r.Get("/{id}/edit", c.PageHandler.EditIngredientForm)
+			r.Get("/create", c.IngredientHandler.CreateIngredientForm)
+			r.Get("/{id}/edit", c.IngredientHandler.EditIngredientForm)
 			r.Post("/{id}/edit", c.IngredientHandler.EditIngredient)
 			r.Post("/{id}/delete", c.IngredientHandler.DeleteIngredient)
-			r.Get("/{id}/prices", c.PageHandler.IngredientPricePage)
+			r.Get("/{id}/prices", c.IngredientHandler.IngredientPricePage)
 			r.Post("/{id}/prices", c.IngredientHandler.AddIngredientPrice)
 		})
 
@@ -60,9 +61,9 @@ func (c *RouteConfig) SetupAuthRoutes() {
 		r.Route("/recipes", func(r chi.Router) {
 			r.Get("/", c.RecipeHandler.Search)
 			r.Post("/", c.RecipeHandler.CreateRecipe)
-			r.Get("/create", c.PageHandler.CreateRecipeForm)
+			r.Get("/create", c.RecipeHandler.CreateRecipeForm)
 			r.Post("/{id}/delete", c.RecipeHandler.DeleteRecipe)
-			r.Get("/{id}/edit", c.PageHandler.EditRecipeForm)
+			r.Get("/{id}/edit", c.RecipeHandler.EditRecipeForm)
 			r.Post("/{id}/edit", c.RecipeHandler.EditRecipe)
 			r.Get("/{id}", c.RecipeHandler.GetRecipeDetail)
 			r.Post("/{id}/items", c.RecipeHandler.AddRecipeItem)
@@ -94,6 +95,22 @@ func (c *RouteConfig) SetupAuthRoutes() {
 			r.Get("/cogs/{menuID}", c.CogsHandler.Show)
 			r.Get("/reports/usage", c.UsageReportHandler.Index)
 			r.Get("/reports/usage/{date}", c.UsageReportHandler.Show)
+		})
+
+		// User
+		r.Group(func(r chi.Router) {
+			r.Use(c.AuthMiddleware.Authorize(auth.RoleOwner))
+			
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/", c.UserHandler.GetAllUsers)
+				r.Post("/", c.UserHandler.CreateUser)
+				r.Get("/create", c.UserHandler.CreateUserForm)
+				r.Get("/{id}/edit", c.UserHandler.EditUserForm)
+				r.Post("/{id}/edit", c.UserHandler.EditUser)
+				r.Get("/{id}/password", c.UserHandler.ChangePasswordForm)
+				r.Post("/{id}/password", c.UserHandler.ChangePassword)
+				r.Post("/{id}/delete", c.UserHandler.DeleteUser)
+			})
 		})
 
 		// Stock

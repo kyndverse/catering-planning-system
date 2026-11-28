@@ -1,0 +1,77 @@
+{{define "content"}} {{with .UserForm}}
+<div class="page-header">
+  <h1>{{.Judul}}</h1>
+</div>
+
+{{with index .Errors "Error"}}
+<div class="form-errors">{{.}}</div>
+{{end}}
+
+<form method="post" action="{{.Action}}" class="form">
+  <div class="field">
+    <label for="name">Nama</label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      value="{{.Data.Name}}"
+      placeholder="Contoh: Budi Santoso"
+      autocomplete="off"
+    />
+    {{with index .Errors "Name"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+
+  {{if not $.isEdit}}
+  <div class="field">
+    <label for="email">Email</label>
+    <input
+      id="email"
+      name="email"
+      type="email"
+      value="{{.Data.Email}}"
+      placeholder="Contoh: budi@dapuribu.id"
+      autocomplete="off"
+    />
+    {{with index .Errors "Email"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+
+  <div class="field">
+    <label for="password">Password</label>
+    <input
+      id="password"
+      name="password"
+      type="password"
+      placeholder="Minimal 8 karakter"
+      autocomplete="new-password"
+    />
+    {{with index .Errors "Password"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+  {{end}}
+
+  <div class="field">
+    <label for="role">Role</label>
+    <select id="role" name="role">
+      {{range $.roles}}
+      <option value="{{.}}" {{if eq . $.UserForm.Data.Role}}selected{{end}}>
+        {{.}}
+      </option>
+      {{end}}
+    </select>
+    {{with index .Errors "Role"}}
+    <div class="form-errors">{{.}}</div>
+    {{end}}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="button">Simpan</button>
+    <a href="/users" class="button button--secondary">Batal</a>
+  </div>
+</form>
+
+{{end}}{{end}}

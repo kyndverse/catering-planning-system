@@ -32,6 +32,69 @@ func NewRecipesHandler(logger *logrus.Logger, renderer *web.Renderer, decoder *f
 	}
 }
 
+func (h *RecipeHandler) CreateRecipeForm(w http.ResponseWriter, r *http.Request) {
+	recipeFrom := model.FormData[model.CreateRecipeRequest]{
+		Judul:  "Create Recipe",
+		Action: "/recipes",
+		Data:   model.CreateRecipeRequest{},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":       "Create Recipe",
+		"active":      "recipes",
+		"isEdit":      false,
+		"submitLabel": "Create",
+		"cancelURL":   "/recipes",
+		"types":       []string{"PREPARED", "COMPONENT", "MENU"},
+		"units":       []string{"g", "ml", "portion"},
+		"RecipeForm":  recipeFrom,
+	}
+
+	h.Renderer.Render(w, "recipes/form.html", data)
+}
+
+func (h *RecipeHandler) EditRecipeForm(w http.ResponseWriter, r *http.Request) {
+	stringID := r.PathValue("id")
+
+	ID, err := strconv.ParseInt(stringID, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid params", http.StatusBadRequest)
+		return
+	}
+
+	recipe, err := h.RecipeService.GetRecipeById(r.Context(), ID)
+	if err != nil {
+		http.Error(w, "failed to fetch recipe", http.StatusInternalServerError)
+		return
+	}
+
+	recipeFrom := model.FormData[model.UpdateRecipeRequest]{
+		Judul:  "Update Recipe",
+		Action: fmt.Sprintf("/recipes/%d/edit", ID),
+		Data: model.UpdateRecipeRequest{
+			Name:      recipe.Name,
+			Type:      recipe.Type,
+			YieldQty:  recipe.YieldQty,
+			YieldUnit: recipe.YieldUnit,
+		},
+		Errors: nil,
+	}
+
+	data := map[string]any{
+		"title":       "Update Recipe",
+		"active":      "recipes",
+		"isEdit":      true,
+		"submitLabel": "Update",
+		"cancelURL":   "/recipes",
+		"types":       []string{"PREPARED", "COMPONENT", "MENU"},
+		"units":       []string{"g", "ml", "portion"},
+		"RecipeForm":  recipeFrom,
+	}
+
+	h.Renderer.Render(w, "recipes/form.html", data)
+}
+
 func (h *RecipeHandler) Search(w http.ResponseWriter, r *http.Request) {
 	typeQuery := r.URL.Query().Get("type")
 

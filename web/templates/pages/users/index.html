@@ -1,0 +1,57 @@
+{{define "content"}}
+<div class="page-header">
+  <h1>Manajemen Pengguna</h1>
+  <a href="/users/create" class="button">Tambah Pengguna</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Dibuat</th>
+        <th><span class="sr-only">Aksi</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .users}}
+      <tr>
+        <td><strong>{{.Name}}</strong></td>
+        <td>{{.Email}}</td>
+        <td><span class="badge">{{.Role}}</span></td>
+        <td>{{.CreatedAt.Format "02 Jan 2006"}}</td>
+        <td>
+          <div class="actions">
+            <a
+              href="/users/{{.ID}}/edit"
+              class="button button--secondary button--sm"
+              >Ubah</a
+            >
+            <a
+              href="/users/{{.ID}}/password"
+              class="button button--secondary button--sm"
+              >Password</a
+            >
+            <form
+              method="post"
+              action="/users/{{.ID}}/delete"
+              onsubmit="return confirm('Hapus pengguna ini?');"
+            >
+              <button type="submit" class="button button--danger button--sm">
+                Hapus
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {{else}}
+      <tr>
+        <td colspan="5" class="empty">Belum ada pengguna.</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
